@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { MenuService } from '../../services/menu.service';
 
 interface NavItem {
     label: string;
@@ -16,6 +17,7 @@ interface NavItem {
     styleUrls: ['./sidebar.component.scss']
 })
 export class SidebarComponent {
+    public menuService = inject(MenuService);
     currentYear = new Date().getFullYear();
 
     menuItems = signal<NavItem[]>([

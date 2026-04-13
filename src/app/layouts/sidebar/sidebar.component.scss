@@ -16,8 +16,16 @@
     display: flex;
     flex-direction: column;
     box-shadow: 2px 0 10px rgba(0, 0, 0, .15);
-    transition: transform 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     color: #fff;
+
+    @media (max-width: 991px) {
+        left: -100% !important; // Ensures it is firmly off-canvas
+
+        &.open {
+            left: 0 !important;
+        }
+    }
 }
 
 // ── Header / Brand ──────────────────────────────────
@@ -25,6 +33,7 @@
     height: var(--navbar-height);
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 0 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     flex-shrink: 0;
@@ -33,6 +42,28 @@
 .sidebar-brand {
     display: flex;
     align-items: center;
+}
+
+.btn-close-sidebar {
+    display: none;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    @media (max-width: 991px) {
+        display: flex;
+    }
 }
 
 .brand-logo {

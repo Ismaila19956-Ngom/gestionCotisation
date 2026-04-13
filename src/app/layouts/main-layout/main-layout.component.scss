@@ -31,7 +31,29 @@
 
 @media (max-width: 991px) {
     .page-wrapper {
-        margin-left: 0;
-        width: 100%;
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    .sidebar-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(2px);
+        z-index: 998;
+        animation: fadeIn 0.2s ease-out;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
     }
 }
