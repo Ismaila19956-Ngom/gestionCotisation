@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MenuService } from '../../services/menu.service';
 
 @Component({
     selector: 'app-header',
@@ -9,6 +10,7 @@ import { CommonModule } from '@angular/common';
     styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent {
+    public menuService = inject(MenuService);
     userName = 'Administrateur';
     userInitials = 'AD';
     userRole = 'Secrétaire Général';

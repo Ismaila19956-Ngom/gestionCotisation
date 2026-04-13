@@ -1,5 +1,11 @@
 <div class="main-wrapper">
     <app-sidebar />
+
+    <!-- Backdrop for mobile -->
+    @if (menuService.isSidebarOpen()) {
+    <div class="sidebar-backdrop" (click)="menuService.closeSidebar()"></div>
+    }
+
     <div class="page-wrapper">
         <app-header />
         <main class="page-content">
