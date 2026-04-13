@@ -1,0 +1,222 @@
+@if (member(); as m) {
+<div class="fiche-container fade-in">
+
+    <!-- ── TABS NAVIGATION ────────────────────────── -->
+    <div class="tabs-header">
+        <button class="tab-btn" [class.active]="activeTab() === 'fiche'" (click)="activeTab.set('fiche')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+            </svg>
+            Fiche de synthèse
+        </button>
+        <button class="tab-btn" [class.active]="activeTab() === 'historique'" (click)="activeTab.set('historique')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            Historique Cotisations
+        </button>
+        <button class="tab-btn" [class.active]="activeTab() === 'documents'" (click)="activeTab.set('documents')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            </svg>
+            Documents
+        </button>
+    </div>
+
+    <div class="tab-content">
+        @if (activeTab() === 'fiche') {
+        <!-- ── IDENTITY HEADER (Like CNAAS) ────────────── -->
+        <div class="fiche-header-card">
+            <div class="profile-section">
+                <div class="qr-code-wrapper">
+                    <div class="qr-placeholder">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--primary)"
+                            stroke-width="1.5">
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                            <rect x="7" y="7" width="1" height="1" />
+                            <rect x="16" y="7" width="1" height="1" />
+                            <rect x="16" y="16" width="1" height="1" />
+                            <rect x="7" y="16" width="1" height="1" />
+                        </svg>
+                    </div>
+                    <span class="qr-caption">ID-00{{ m.id }}</span>
+                </div>
+            </div>
+
+            <div class="info-main">
+                <div class="info-row">
+                    <div class="info-item">
+                        <span class="label">Numéro Membre:</span>
+                        <span class="value font-mono">ASC-{{ 2020 + m.id }}-{{ m.id }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Statut Global:</span>
+                        <span class="status-badge valid">À JOUR</span>
+                    </div>
+                </div>
+
+                <div class="info-row main-name">
+                    <div class="info-item">
+                        <span class="label">Membre:</span>
+                        <span class="value uppercase strong">{{ m.prenom }} {{ m.nom }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Catégorie:</span>
+                        <span class="value category-val">{{ formatMontant(+m.categorie) }} / mois</span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-item">
+                        <span class="label">Sexe:</span>
+                        <span class="value">{{ m.sexe === 'M' ? 'Masculin' : 'Féminin' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Age:</span>
+                        <span class="value">{{ age }} ans ({{ m.dateNaissance | date:'dd/MM/yyyy' }})</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-trigger" (click)="isFlipped.set(!isFlipped())" [class.active]="isFlipped()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- ── CRM GRID (Detailed Info) ───────────────── -->
+        <div class="crm-sections-container mt-4" [class.show-more]="isFlipped()">
+
+            <!-- Section 1: Identité -->
+            <div class="section-block">
+                <h4 class="section-title">| Identité & Profil</h4>
+                <div class="crm-grid">
+                    <div class="crm-item"><span class="crm-label">Prénom:</span> <b class="crm-value">{{ m.prenom }}</b>
+                    </div>
+                    <div class="crm-item"><span class="crm-label">Nom:</span> <b class="crm-value">{{ m.nom }}</b></div>
+                    <div class="crm-item"><span class="crm-label">Date Naissance:</span> <b class="crm-value">{{
+                            m.dateNaissance | date:'dd/MM/yyyy' }}</b></div>
+                    <div class="crm-item"><span class="crm-label">Lieu Naissance:</span> <b class="crm-value">Dakar,
+                            Sénégal</b></div>
+                    <div class="crm-item"><span class="crm-label">Genre:</span> <b class="crm-value">{{ m.sexe === 'M' ?
+                            'Masculin' : 'Féminin' }}</b></div>
+                    <div class="crm-item"><span class="crm-label">Nationalité:</span> <b
+                            class="crm-value">Sénégalaise</b></div>
+                </div>
+            </div>
+
+            <!-- Section 2: Contact -->
+            <div class="section-block">
+                <h4 class="section-title">| Contact & Localisation</h4>
+                <div class="crm-grid">
+                    <div class="crm-item"><span class="crm-label">Téléphone:</span> <b class="crm-value">+221 77 123 45
+                            67</b></div>
+                    <div class="crm-item"><span class="crm-label">Email:</span> <b class="crm-value">{{
+                            m.prenom.toLowerCase() }}.{{ m.nom.toLowerCase() }}@email.com</b></div>
+                    <div class="crm-item"><span class="crm-label">Adresse:</span> <b class="crm-value">Villa N° 45,
+                            Quartier Natangué</b></div>
+                    <div class="crm-item"><span class="crm-label">Région:</span> <b class="crm-value">Dakar</b></div>
+                    <div class="crm-item"><span class="crm-label">Département:</span> <b class="crm-value">Dakar</b>
+                    </div>
+                    <div class="crm-item"><span class="crm-label">Commune:</span> <b class="crm-value">Fann-Point
+                            E-Amitié</b></div>
+                </div>
+            </div>
+
+            <!-- Section 3: Adhésion -->
+            <div class="section-block">
+                <h4 class="section-title">| Adhésion & Administration</h4>
+                <div class="crm-grid">
+                    <div class="crm-item"><span class="crm-label">Date Adhésion:</span> <b class="crm-value">{{
+                            m.dateAdhesion | date:'dd/MM/yyyy' }}</b></div>
+                    <div class="crm-item"><span class="crm-label">Année:</span> <b class="crm-value">{{ m.dateAdhesion |
+                            date:'yyyy' }}</b></div>
+                    <div class="crm-item"><span class="crm-label">Catégorie:</span> <b class="crm-value">{{
+                            formatMontant(+m.categorie) }}</b></div>
+                    <div class="crm-item"><span class="crm-label">Parrain:</span> <b class="crm-value">M. Abdoulaye
+                            DIOP</b></div>
+                    <div class="crm-item"><span class="crm-label">Fonction:</span> <b class="crm-value">Membre Actif</b>
+                    </div>
+                    <div class="crm-item"><span class="crm-label">Dernière Maj:</span> <b
+                            class="crm-value">13/04/2026</b></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── FINANCIAL OVERVIEW ─────────────────────── -->
+        <div class="section-block mt-4">
+            <div class="section-title-bar">
+                <h3>ÉTAT DES COTISATIONS RÉCENTES</h3>
+                <button class="btn-goto" [routerLink]="['/membres/suivi', m.id]">VOIR TOUT</button>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>MOIS</th>
+                        <th>MONTANT</th>
+                        <th>DATE PAIEMENT</th>
+                        <th>RÉFÉRENCE</th>
+                        <th>STATUT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (c of history().slice(0, 3); track c.id) {
+                    <tr>
+                        <td class="fw-bold uppercase">{{ c.mois }} {{ c.annee }}</td>
+                        <td class="fw-bold">{{ formatMontant(c.montantVerse) }}</td>
+                        <td>{{ c.datePaiement | date:'dd/MM/yyyy' }}</td>
+                        <td><code class="ref-code">{{ c.reference }}</code></td>
+                        <td>
+                            <span class="status-badge" [class.valid]="c.status === 'À jour'"
+                                [class.warning]="c.status === 'Rappel'" [class.info]="c.status === 'Avance'">
+                                {{ c.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                        <td colspan="5" class="empty-cell">Aucune cotisation récente enregistrée.</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        } @else if (activeTab() === 'historique') {
+        <!-- Redirect or Integrated detailed table -->
+        <div class="p-5 text-center">
+            <p class="text-muted">Utilisez le module de suivi pour l'historique complet.</p>
+            <a [routerLink]="['/membres/suivi', m.id]" class="btn btn-emerald mt-2">Aller au Suivi Individuel</a>
+        </div>
+        } @else {
+        <div class="p-5 text-center text-muted">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+                class="mb-3 opacity-25">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            </svg>
+            <p>Aucun document lié à ce membre.</p>
+        </div>
+        }
+    </div>
+
+    <div class="fiche-footer mt-4">
+        <button class="btn btn-outline-emerald" routerLink="/membres">RETOUR À LA LISTE</button>
+        <button class="btn btn-emerald" (click)="onAddContribution()">AJOUTER COTISATION</button>
+    </div>
+
+</div>
+
+@if (showContributionForm()) {
+<app-contribution-form [member]="m" (close)="closeModal()" />
+}
+}

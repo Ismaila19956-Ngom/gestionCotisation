@@ -1,0 +1,64 @@
+<div class="page-header fade-in">
+    <h4>Cotisations Mensuelles</h4>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">ASC Natangué</li>
+        <li class="breadcrumb-item active">Cotisations</li>
+    </ol>
+</div>
+
+<!-- ── Summary Bar ──────────────────────────────────── -->
+<div class="summary-bar fade-in">
+    @for (group of groupedCotisations(); track group.label) {
+    <div class="summary-item">
+        <span class="dot" [ngClass]="'bg-' + group.color"></span>
+        <span class="label">{{ group.label }} :</span>
+        <span class="value">{{ group.members.length }} membres</span>
+    </div>
+    }
+</div>
+
+<!-- ── Grouped Tables ───────────────────────────────── -->
+@for (group of groupedCotisations(); track group.label) {
+<div class="category-block fade-in">
+    <div class="category-header" [ngClass]="'border-' + group.color">
+        <h5>{{ group.label }}</h5>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="antigravite-table">
+                <thead>
+                    <tr>
+                        <th>Nom du Membre</th>
+                        <th>Montant Versé</th>
+                        <th>Date Versement</th>
+                        <th>Statut</th>
+                        <th>Observation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (member of group.members; track member.id) {
+                    @let lastV = getLastPayment(member.id);
+                    <tr>
+                        <td>{{ member.prenom }} {{ member.nom }}</td>
+                        <td class="fw-bold">{{ lastV ? formatMontant(lastV.montantVerse) : '—' }}</td>
+                        <td class="text-muted">{{ lastV ? (lastV.datePaiement | date:'dd/MM/yyyy') : '—' }}</td>
+                        <td>
+                            <span class="badge" *ngIf="lastV" [class.badge-success]="lastV.status === 'À jour'"
+                                [class.badge-info]="lastV.status === 'Avance'"
+                                [class.badge-warning]="lastV.status === 'Rappel'">
+                                {{ lastV.status }}
+                            </span>
+                            <span *ngIf="!lastV" class="text-muted">—</span>
+                        </td>
+                        <td>
+                            <span class="observation">{{ lastV?.observation || '—' }}</span>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+}

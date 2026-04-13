@@ -1,0 +1,294 @@
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f4f7f6;
+    padding: 2rem;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.auth-wrapper {
+    display: flex;
+    width: 1000px;
+    max-width: 95%;
+    min-height: 600px;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-pane {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    transition: all 0.5s ease;
+    position: relative;
+
+    &.left {
+        z-index: 2;
+    }
+
+    &.right {
+        z-index: 1;
+    }
+}
+
+.pane-content {
+    width: 100%;
+    max-width: 400px;
+}
+
+// ── Colors ──────────────────────────────────────────
+
+.emerald-bg {
+    background: #004d1a;
+}
+
+.white-bg {
+    background: #ffffff;
+}
+
+.text-emerald {
+    color: #004d1a;
+}
+
+.text-white {
+    color: #ffffff;
+}
+
+.text-muted {
+    color: #718096;
+}
+
+// ── Typography ──────────────────────────────────────
+
+.welcome-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+
+.welcome-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+    opacity: 0.9;
+}
+
+.form-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+    text-align: center;
+}
+
+.branding-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 2rem;
+}
+
+.branding-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-top: 2rem;
+}
+
+// ── Forms ───────────────────────────────────────────
+
+.login-form {
+    .form-group {
+        margin-bottom: 1.5rem;
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: #f0f4f8;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+
+            &:focus {
+                background: #fff;
+                border-color: #004d1a;
+                box-shadow: 0 0 0 3px rgba(0, 77, 26, 0.1);
+                outline: none;
+            }
+
+            &.is-invalid {
+                border-color: #f56565;
+                background-color: #fff5f5;
+            }
+        }
+    }
+}
+
+.password-wrapper {
+    position: relative;
+
+    .btn-toggle-password {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #718096;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+
+        &:hover {
+            color: #004d1a;
+        }
+    }
+}
+
+.form-options {
+    text-align: right;
+    margin-bottom: 2rem;
+
+    .forgot-link {
+        color: #718096;
+        font-size: 0.85rem;
+        text-decoration: none;
+        transition: 0.2s;
+
+        &:hover {
+            color: #004d1a;
+            text-decoration: underline;
+        }
+    }
+}
+
+// ── Buttons ─────────────────────────────────────────
+
+.btn-se-connecter {
+    padding: 0.85rem 2.5rem;
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &:hover {
+        background: #003a13;
+        transform: translateY(-2px);
+    }
+}
+
+.btn-en-savoir-plus {
+    padding: 0.85rem 2.5rem;
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.white-outline {
+    background: transparent;
+    color: #fff;
+    border: 2px solid #fff;
+
+    &:hover {
+        background: #fff;
+        color: #004d1a;
+    }
+}
+
+// ── Logo ────────────────────────────────────────────
+
+.branding-logo {
+    margin-bottom: 2rem;
+
+    .logo-img {
+        max-width: 200px;
+        height: auto;
+    }
+}
+
+// ── Footer ──────────────────────────────────────────
+
+.auth-footer {
+    margin-top: 2rem;
+    color: #4a5568;
+    font-size: 0.9rem;
+
+    .fw-bold {
+        font-weight: 700;
+        color: #000;
+    }
+}
+
+// ── Animations ──────────────────────────────────────
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.shadow-premium {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-hover {
+    &:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 77, 26, 0.2);
+    }
+}
+
+// ── Responsive ──────────────────────────────────────
+
+@media (max-width: 900px) {
+    .auth-wrapper {
+        flex-direction: column;
+        width: 100%;
+        max-width: 500px;
+        min-height: auto;
+    }
+
+    .auth-pane {
+        padding: 2.5rem 1.5rem;
+    }
+
+    .branding-desc {
+        display: none; // Keep it clean on mobile
+    }
+}

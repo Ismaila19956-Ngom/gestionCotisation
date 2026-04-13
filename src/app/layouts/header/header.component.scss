@@ -1,0 +1,123 @@
+// Header Component Styles — Antigravité Design
+
+:host {
+    display: block;
+}
+
+.app-header {
+    position: fixed;
+    top: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    height: var(--navbar-height);
+    background: #fff;
+    border-bottom: 1px solid var(--border-color);
+    z-index: 978;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+}
+
+// ── Left ────────────────────────────────────────────
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.header-brand-mobile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary);
+
+    .brand-icon {
+        font-size: 1.1rem;
+    }
+}
+
+// ── Right ────────────────────────────────────────────
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-date {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    color: var(--gray-600);
+
+    svg {
+        color: var(--gray-500);
+        flex-shrink: 0;
+    }
+}
+
+.header-divider {
+    width: 1px;
+    height: 24px;
+    background: var(--border-color);
+}
+
+// ── User Profile ─────────────────────────────────────
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    cursor: pointer;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.375rem;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: var(--gray-100);
+    }
+}
+
+.user-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(79, 108, 82, .3);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+
+    .user-name {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--gray-800);
+    }
+
+    .user-role {
+        font-size: 0.7rem;
+        color: var(--gray-500);
+    }
+}
+
+@media (max-width: 576px) {
+    .header-date {
+        display: none;
+    }
+
+    .user-info {
+        display: none;
+    }
+}

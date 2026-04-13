@@ -1,0 +1,71 @@
+<div class="modal-backdrop fade-in">
+    <div class="modal-card wide">
+        <div class="modal-header">
+            <div class="member-info">
+                <span class="avatar">{{ member.prenom[0] }}{{ member.nom[0] }}</span>
+                <div>
+                    <h5>Historique des Cotisations</h5>
+                    <p>{{ member.prenom }} {{ member.nom }} — {{ member.categorie }} F/mois</p>
+                </div>
+            </div>
+            <button class="close-btn" (click)="close.emit()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="history-container">
+                @if (history() && history().length > 0) {
+                <table class="antigravite-table">
+                    <thead class="dark-green-head">
+                        <tr>
+                            <th>Mois / Année</th>
+                            <th>Montant</th>
+                            <th>Date Paiement</th>
+                            <th>Statut</th>
+                            <th>Observation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (v of history(); track v.id) {
+                        <tr>
+                            <td class="fw-bold">{{ v.mois }} {{ v.annee }}</td>
+                            <td>{{ formatMontant(v.montantVerse) }}</td>
+                            <td class="text-muted">{{ v.datePaiement | date:'dd/MM/yyyy' }}</td>
+                            <td>
+                                <span class="badge" [class.badge-success]="v.status === 'À jour'"
+                                    [class.badge-info]="v.status === 'Avance'"
+                                    [class.badge-warning]="v.status === 'Rappel'">
+                                    {{ v.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="observation-text">{{ v.observation || '—' }}</span>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+                } @else {
+                <div class="empty-state">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.5">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    <p>Aucun versement enregistré pour ce membre.</p>
+                </div>
+                }
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-primary" (click)="close.emit()">Fermer</button>
+        </div>
+    </div>
+</div>

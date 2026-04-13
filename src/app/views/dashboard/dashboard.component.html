@@ -1,0 +1,101 @@
+<div class="page-header fade-in">
+    <h4>Tableau de Bord</h4>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">ASC Natangué</li>
+        <li class="breadcrumb-item active">Accueil</li>
+    </ol>
+</div>
+
+<!-- ── Quick Stats ──────────────────────────────────── -->
+<div class="row fade-in">
+    <div class="col">
+        <div class="stat-card primary">
+            <div class="stat-icon">💰</div>
+            <div class="stat-content">
+                <div class="stat-label">Total Recu</div>
+                <div class="stat-value">{{ formatMontant(stats().totalRecu) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stat-card success">
+            <div class="stat-icon">📅</div>
+            <div class="stat-content">
+                <div class="stat-label">Attendu ce mois</div>
+                <div class="stat-value">{{ formatMontant(stats().totalAttendu) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stat-card warning">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-content">
+                <div class="stat-label">Arriérés</div>
+                <div class="stat-value">{{ formatMontant(stats().arrieres) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stat-card info">
+            <div class="stat-icon">🚀</div>
+            <div class="stat-content">
+                <div class="stat-label">Avances</div>
+                <div class="stat-value">{{ formatMontant(stats().avances) }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Recouvrement & Recent ─────────────────────────── -->
+<div class="dashboard-grid mt-4 fade-in">
+    <div class="card card-recouvrement">
+        <div class="card-header">
+            <h5>Taux de Recouvrement</h5>
+        </div>
+        <div class="card-body">
+            <div class="progress-container">
+                <div class="progress-circle">
+                    <span class="percentage">{{ stats().tauxRecouvrement }}%</span>
+                </div>
+                <p class="description">Recouvrement actuel sur les cotisations attendues.</p>
+                <div class="progress-bar-flat">
+                    <div class="progress-fill" [style.width.%]="stats().tauxRecouvrement"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card recent-payments">
+        <div class="card-header">
+            <h5>Derniers Versements</h5>
+        </div>
+        <div class="table-container">
+            <table class="antigravite-table">
+                <thead>
+                    <tr>
+                        <th>Membre</th>
+                        <th>Montant</th>
+                        <th>Mois</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (payment of recentPayments(); track payment.id) {
+                    <tr>
+                        <td>{{ payment.memberName }}</td>
+                        <td class="fw-bold">{{ formatMontant(payment.montantVerse) }}</td>
+                        <td class="text-muted">{{ payment.mois }}</td>
+                        <td>
+                            <span class="badge" [class.badge-success]="payment.status === 'À jour'"
+                                [class.badge-info]="payment.status === 'Avance'"
+                                [class.badge-warning]="payment.status === 'Rappel'">
+                                {{ payment.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

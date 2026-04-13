@@ -1,0 +1,77 @@
+<div class="modal-backdrop fade-in">
+    <div class="modal-card">
+        <!-- Section Header -->
+        <div class="modal-header">
+            <div class="member-info">
+                <h5>Nouvelle Cotisation</h5>
+                <p>{{ member.prenom }} {{ member.nom }} — {{ formatMontant(categoryAmount()) }}/mois</p>
+            </div>
+            <button class="close-btn" (click)="close.emit()" title="Fermer">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+
+        <form (ngSubmit)="onSubmit()" #contribForm="ngForm">
+            <div class="modal-body">
+                <!-- Section Body with Grid -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="mois">Mois concerné</label>
+                        <select id="mois" [(ngModel)]="form.mois" name="mois" class="form-select">
+                            @for (m of months; track m) {
+                            <option [value]="m">{{ m }}</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="annee">Année</label>
+                        <input type="number" id="annee" [(ngModel)]="form.annee" name="annee" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Date de paiement</label>
+                        <input type="date" id="date" [(ngModel)]="form.datePaiement" name="date" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="montant">Montant Versé (FCFA)</label>
+                        <div class="input-with-icon">
+                            <input type="number" id="montant" [(ngModel)]="form.montantVerse" name="montant"
+                                class="form-control" placeholder="10000">
+                            <span class="icon-right text-muted fw-bold">F</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-2">
+                    @if (form.montantVerse > categoryAmount()) {
+                    <div class="badge-status info">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                        Sera marqué comme <strong>Avance</strong>
+                    </div>
+                    } @else if (form.montantVerse < categoryAmount()) { <div class="badge-status warning">
+                        Sera marqué comme <strong>Rappel</strong>
+                </div>
+                } @else {
+                <div class="badge-status success">Montant exact</div>
+                }
+            </div>
+    </div>
+
+    <!-- Section Footer -->
+    <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="close.emit()">Annuler</button>
+        <button type="submit" class="btn btn-emerald-web">Enregistrer</button>
+    </div>
+    </form>
+</div>
+</div>

@@ -1,0 +1,195 @@
+@if (member(); as m) {
+<div class="page-header fade-in">
+    <div class="d-flex align-items-center gap-3">
+        <a routerLink="/membres" class="back-btn" title="Retour à la liste">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+            </svg>
+        </a>
+        <h4>Suivi Individuel : {{ m.prenom }} {{ m.nom }} <span class="member-id">#ID-00{{ m.id }}</span></h4>
+    </div>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">ASC Natangué</li>
+        <li class="breadcrumb-item"><a routerLink="/membres">Membres</a></li>
+        <li class="breadcrumb-item active">Suivi</li>
+    </ol>
+</div>
+
+<div class="suivi-container fade-in">
+
+    <!-- ── Toolbar ────────────────────────────────────── -->
+    <div class="toolbar card mb-4">
+        <div class="search-box">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); currentPage.set(1)"
+                placeholder="Filtrer par mois, date ou référence..." class="form-control">
+        </div>
+
+        <div class="filter-group d-flex align-items-center gap-2">
+            <span class="filter-label text-muted small fw-bold">Année :</span>
+            <select class="form-select year-select" [ngModel]="selectedYear()"
+                (ngModelChange)="selectedYear.set($event ? Number($event) : null); currentPage.set(1)">
+                <option [value]="null">Toutes</option>
+                @for (year of availableYears; track year) {
+                <option [value]="year">{{ year }}</option>
+                }
+            </select>
+        </div>
+
+        <button class="btn btn-emerald" (click)="onAddContribution()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Ajouter une Cotisation
+        </button>
+    </div>
+
+    <!-- ── History Table ──────────────────────────────── -->
+    <div class="card overflow-hidden">
+        <div class="table-container">
+            <table class="antigravite-table">
+                <thead class="dark-green-head">
+                    <tr>
+                        <th>MOIS</th>
+                        <th>DATE PAIEMENT</th>
+                        <th>MONTANT VERSÉ</th>
+                        <th>RÉFÉRENCE</th>
+                        <th>STATUT</th>
+                        <th class="text-center">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (c of paginatedHistory(); track c.id) {
+                    <tr>
+                        <td class="fw-bold uppercase">{{ c.mois }} {{ c.annee }}</td>
+                        <td class="text-muted">{{ c.datePaiement | date:'dd/MM/yyyy' }}</td>
+                        <td class="fw-bold text-primary">{{ formatMontant(c.montantVerse) }}</td>
+                        <td><code class="ref-code">{{ c.reference }}</code></td>
+                        <td>
+                            <span class="badge" [class.badge-success]="c.status === 'À jour'"
+                                [class.badge-info]="c.status === 'Avance'"
+                                [class.badge-warning]="c.status === 'Rappel'">
+                                {{ c.status }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="action-buttons">
+                                <button class="btn-action" title="Imprimer Reçu">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <polyline points="6 9 6 2 18 2 18 9" />
+                                        <path
+                                            d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                                        <rect x="6" y="14" width="12" height="8" />
+                                    </svg>
+                                </button>
+
+                                <div class="dropdown-container">
+                                    <button class="btn-action more" (click)="toggleDropdown(c.id, $event)"
+                                        title="Plus d'actions">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2.5">
+                                            <circle cx="12" cy="12" r="1" />
+                                            <circle cx="12" cy="5" r="1" />
+                                            <circle cx="12" cy="19" r="1" />
+                                        </svg>
+                                    </button>
+
+                                    @if (activeDropdownId() === c.id) {
+                                    <div class="action-dropdown fade-in">
+                                        <button class="dropdown-item edit">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2.2">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
+                                                </path>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
+                                                </path>
+                                            </svg>
+                                            Modifier
+                                        </button>
+                                        <button class="dropdown-item delete">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2.2">
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path
+                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                </path>
+                                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                                            </svg>
+                                            Supprimer
+                                        </button>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">Aucune contribution trouvée.</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Inspired by CNAAS -->
+        <div class="pagination-bar">
+            <div class="pagination-left">
+                <span>Afficher </span>
+                <select class="page-size-select" [value]="itemsPerPage()"
+                    (change)="itemsPerPage.set(+$any($event.target).value); currentPage.set(1)">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <span> lignes</span>
+            </div>
+
+            <div class="pagination-center">
+                Page {{currentPage()}} sur {{totalPages()}} · {{totalItems()}} résultat(s)
+            </div>
+
+            <div class="pagination-right">
+                <button class="btn-pagination" [disabled]="currentPage() === 1" (click)="setPage(1)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="11 17 6 12 11 7" />
+                        <polyline points="18 17 13 12 18 7" />
+                    </svg>
+                </button>
+                <button class="btn-pagination" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                </button>
+                <button class="btn-pagination active">{{currentPage()}}</button>
+                <button class="btn-pagination" [disabled]="currentPage() === totalPages()"
+                    (click)="setPage(currentPage() + 1)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                </button>
+                <button class="btn-pagination" [disabled]="currentPage() === totalPages()"
+                    (click)="setPage(totalPages())">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="13 17 18 12 13 7" />
+                        <polyline points="6 17 11 12 6 7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Re-integrated Modal Component -->
+@if (showContributionForm()) {
+<app-contribution-form [member]="m" (close)="closeModal()" />
+}
+}

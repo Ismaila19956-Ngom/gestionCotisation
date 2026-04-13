@@ -1,0 +1,84 @@
+// Dashboard SCSS
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+
+    @media (max-width: 1200px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 576px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+// ── Progress ─────────────────────────────────────────
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--gray-600);
+}
+
+.progress-pct {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--primary);
+}
+
+.progress-bar-wrapper {
+    height: 10px;
+    background: var(--gray-200);
+    border-radius: 50rem;
+    overflow: hidden;
+    margin-bottom: 0.875rem;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-dark), var(--primary-light));
+    border-radius: 50rem;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-legend {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    color: var(--gray-600);
+
+    .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    &.success .dot {
+        background: var(--success);
+    }
+
+    &.warning .dot {
+        background: var(--warning);
+    }
+
+    &.info .dot {
+        background: var(--info);
+    }
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}

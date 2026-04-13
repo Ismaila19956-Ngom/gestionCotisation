@@ -1,0 +1,76 @@
+@use './modals';
+
+// Custom refinement for Webgram emerald button
+.btn-emerald-web {
+    background: #14522d;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(20, 82, 45, 0.2);
+
+    &:hover {
+        background: #0d3b20;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(20, 82, 45, 0.3);
+    }
+}
+
+.btn-light {
+    background: #e9ecef;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+
+    &:hover {
+        background: #dee2e6;
+    }
+}
+
+.input-with-icon {
+    position: relative;
+
+    .icon-right {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.8rem;
+    }
+}
+
+.badge-status {
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &.success {
+        background: #e6f4ea;
+        color: #1e7e34;
+    }
+
+    &.warning {
+        background: #fff3e0;
+        color: #e65100;
+    }
+
+    &.info {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+}
+
+.mt-2 {
+    margin-top: 0.5rem;
+}

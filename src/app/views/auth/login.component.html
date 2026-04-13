@@ -1,0 +1,89 @@
+<div class="login-page fade-in">
+    <div class="auth-wrapper shadow-premium" [class.show-form]="showForm()">
+        <!-- ── Pane 1: Dynamic Content ────────────────── -->
+        <div class="auth-pane left" [class.emerald-bg]="!showForm()" [class.white-bg]="showForm()">
+            <div class="pane-content fade-in-up">
+                @if (!showForm()) {
+                <!-- Landing View -->
+                <h1 class="welcome-title text-white">Bienvenue !</h1>
+                <p class="welcome-subtitle text-white">Connectez-vous pour accéder à votre espace</p>
+                <button class="btn-se-connecter white-outline" (click)="toggleView()">
+                    SE CONNECTER
+                </button>
+                } @else {
+                <!-- Login Form View -->
+                <h2 class="form-title text-emerald">Connexion</h2>
+
+                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+                    <div class="form-group">
+                        <label>Identifiant</label>
+                        <input type="text" formControlName="username" class="form-control"
+                            [class.is-invalid]="loginForm.get('username')?.touched && loginForm.get('username')?.invalid"
+                            placeholder="admin">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mot de passe</label>
+                        <div class="password-wrapper">
+                            <input [type]="showPassword() ? 'text' : 'password'" formControlName="password"
+                                class="form-control"
+                                [class.is-invalid]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
+                                placeholder=".........">
+                            <button type="button" class="btn-toggle-password" (click)="togglePassword()">
+                                <svg *ngIf="!showPassword()" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg *ngIf="showPassword()" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                    </path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+                    </div>
+
+                    <button type="submit" class="btn-submit emerald-bg text-white shadow-hover">
+                        SE CONNECTER
+                    </button>
+                </form>
+                }
+            </div>
+        </div>
+
+        <!-- ── Pane 2: Branding Content ───────────────── -->
+        <div class="auth-pane right" [class.white-bg]="!showForm()" [class.emerald-bg]="showForm()">
+            <div class="pane-content text-center fade-in-up">
+                <div class="branding-logo">
+                    <img src="https://backend.asc-natangue.com/storage/logos/cnaas-logo.png" alt="CNAAS Logo"
+                        class="logo-img">
+                </div>
+
+                @if (!showForm()) {
+                <p class="branding-desc text-muted">
+                    Plateforme intégrée conçue pour centraliser et simplifier l'ensemble de vos opérations d'assurance
+                    agricole. Du suivi des souscriptions à la gestion des sinistres, en passant par la relation client,
+                    pilotez toutes vos activités avec précision, fiabilité et conformité aux standards du CNAAS.
+                </p>
+                } @else {
+                <h3 class="branding-title text-white">Solution de Gestion d'Assurance Agricole du Sénégal</h3>
+                <button class="btn-en-savoir-plus white-outline">
+                    EN SAVOIR PLUS
+                </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Copyright -->
+    <div class="auth-footer text-center">
+        <p>Design by <span class="fw-bold">WEBGRAM</span> - Copyright © 2025.</p>
+    </div>
+</div>

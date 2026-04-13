@@ -1,0 +1,37 @@
+// Main Layout SCSS
+
+:host {
+    display: block;
+}
+
+.main-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.page-wrapper {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: margin 0.1s ease, width 0.1s ease;
+}
+
+.page-content {
+    flex: 1;
+    padding: 1.75rem;
+    margin-top: var(--navbar-height);
+    background: var(--app-bg);
+
+    @media (max-width: 767px) {
+        padding: 1.25rem 1rem;
+    }
+}
+
+@media (max-width: 991px) {
+    .page-wrapper {
+        margin-left: 0;
+        width: 100%;
+    }
+}

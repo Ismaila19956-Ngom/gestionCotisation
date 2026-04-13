@@ -1,0 +1,52 @@
+@use './modals';
+
+.history-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--gray-500);
+
+    p {
+        margin-top: 1rem;
+    }
+}
+
+.observation-text {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+    font-style: italic;
+}
+
+.antigravite-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    .dark-green-head th {
+        background: var(--primary-dark);
+        color: #fff;
+        padding: 0.75rem 1rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        position: sticky;
+        top: 0;
+    }
+
+    tr {
+        border-bottom: 1px solid var(--border-color);
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    td {
+        padding: 0.75rem 1rem;
+        font-size: 0.8rem;
+    }
+}
