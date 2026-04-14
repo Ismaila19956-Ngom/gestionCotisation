@@ -35,9 +35,14 @@ export class LoginComponent {
 
     onSubmit() {
         if (this.loginForm.valid) {
-            console.log('Login attempt:', this.loginForm.value);
-            // Simulate login and redirect
-            this.router.navigate(['/dashboard']);
+            const { username, password } = this.loginForm.value;
+
+            // Hardcoded check pour l'utilisateur demandé
+            if (username === 'admin' && password === 'pass') {
+                this.router.navigate(['/membres']);
+            } else {
+                alert('Identifiants incorrects. Essayez: admin / pass');
+            }
         } else {
             this.loginForm.markAllAsTouched();
         }

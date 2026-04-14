@@ -1,0 +1,86 @@
+<div class="cotisation-container">
+    <div class="header-actions">
+        <div>
+            <h2 style="margin: 0; color: #1b5e20;">Campagnes de Cotisation</h2>
+            <p style="margin: 0.5rem 0 0 0; color: #555;">Gérez vos périodes de cotisations et le suivi par catégorie.
+            </p>
+        </div>
+        <div class="action-buttons">
+            <button class="btn btn-primary btn-add" (click)="openModal()">
+                <span class="icon">+</span> Initialiser une Campagne
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="antigravity-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Libellé</th>
+                    <th>Année</th>
+                    <th>Période</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let camp of campagnes; let i = index">
+                    <td>{{ i + 1 }}</td>
+                    <td class="primary-text">{{ camp.libelle }}</td>
+                    <td>{{ camp.annee }}</td>
+                    <td>{{ getMoisLabel(camp.moisDebut) }} - {{ getMoisLabel(camp.moisFin) }}</td>
+                    <td>
+                        <span class="status-badge status-active" *ngIf="camp.statut === 'EN_COURS'">En cours</span>
+                        <span class="status-badge" *ngIf="camp.statut !== 'EN_COURS'">{{ camp.statut }}</span>
+                    </td>
+                    <td class="actions">
+                        <button class="btn btn-icon btn-view" (click)="goToSuivi(camp.id)" title="Suivi de la campagne">
+                            👁️ Suivi
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Ajout -->
+<div class="modal-backdrop" *ngIf="isModalOpen">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Nouvelle Campagne</h3>
+            <button class="close-btn" (click)="closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Libellé (ex: Cotisation Annuelle)</label>
+                <input type="text" [(ngModel)]="nouvelleCampagne.libelle" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Année</label>
+                <select [(ngModel)]="nouvelleCampagne.annee" class="form-control">
+                    <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group half">
+                    <label>Mois de début</label>
+                    <select [(ngModel)]="nouvelleCampagne.moisDebut" class="form-control">
+                        <option *ngFor="let m of moisList" [value]="m.value">{{ m.label }}</option>
+                    </select>
+                </div>
+                <div class="form-group half">
+                    <label>Mois de fin</label>
+                    <select [(ngModel)]="nouvelleCampagne.moisFin" class="form-control">
+                        <option *ngFor="let m of moisList" [value]="m.value">{{ m.label }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="closeModal()">Annuler</button>
+            <button class="btn btn-primary" (click)="saveCampagne()">Sauvegarder</button>
+        </div>
+    </div>
+</div>

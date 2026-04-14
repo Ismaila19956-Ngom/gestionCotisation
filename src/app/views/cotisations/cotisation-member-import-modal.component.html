@@ -1,0 +1,80 @@
+<div class="modal-overlay" (click)="onCancel()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <!-- Header -->
+        <div class="modal-header-premium">
+            <div class="header-content">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="margin-right:12px;">
+                    <path d="M17 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M9 21v-2a4 4 0 0 1 4-4h1"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>Sélection des Membres</span>
+            </div>
+            <button class="btn-close-modal" (click)="onCancel()">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Barre de recherche -->
+            <div class="search-box">
+                <input type="text" [(ngModel)]="searchTerm" (input)="onSearch()"
+                    placeholder="Rechercher un membre (nom, prénom, code, CNI, téléphone)..." class="search-input">
+            </div>
+
+            <div class="table-scroll-container">
+                <table class="import-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)">
+                            </th>
+                            <th style="width: 25%;">CODE</th>
+                            <th style="width: 45%;">NOM COMPLET</th>
+                            <th style="width: 30%;">TÉLÉPHONE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (member of paginatedMembers; track member.id) {
+                        <tr [class.selected]="member.selected" (click)="member.selected = !member.selected">
+                            <td (click)="$event.stopPropagation()">
+                                <input type="checkbox" [(ngModel)]="member.selected">
+                            </td>
+                            <td>
+                                <span class="member-code">{{ member.codeMembre }}</span>
+                            </td>
+                            <td>{{ member.prenom }} {{ member.nom }}</td>
+                            <td>{{ member.telephone }}</td>
+                        </tr>
+                        } @empty {
+                        <tr>
+                            <td colspan="4" class="empty-state">Aucun membre trouvé.</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (totalPages > 1) {
+            <div class="pagination-controls">
+                <button class="btn-page" (click)="prevPage()" [disabled]="currentPage === 1">Précédent</button>
+                <span>Page {{ currentPage }} sur {{ totalPages }}</span>
+                <button class="btn-page" (click)="nextPage()" [disabled]="currentPage === totalPages">Suivant</button>
+            </div>
+            }
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-annuler" (click)="onCancel()">Annuler</button>
+            <button class="btn-valider" (click)="onConfirm()" [disabled]="getSelectedCount() === 0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    style="margin-right: 8px;">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Valider
+            </button>
+        </div>
+    </div>
+</div>
