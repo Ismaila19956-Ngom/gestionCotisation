@@ -1,17 +1,46 @@
 <div class="login-page fade-in">
     <div class="auth-wrapper shadow-premium" [class.show-form]="showForm()">
-        <!-- ── Pane 1: Dynamic Content ────────────────── -->
-        <div class="auth-pane left" [class.emerald-bg]="!showForm()" [class.white-bg]="showForm()">
-            <div class="pane-content fade-in-up">
+
+        <!-- ── PANE A: Green Pane ────────────────── -->
+        <div class="auth-pane emerald-bg pane-a">
+            <div class="pane-content text-center fade-in-up">
                 @if (!showForm()) {
-                <!-- Landing View -->
                 <h1 class="welcome-title text-white">Bienvenue !</h1>
                 <p class="welcome-subtitle text-white">Connectez-vous pour accéder à votre espace</p>
-                <button class="btn-se-connecter white-outline" (click)="toggleView()">
+                <button class="btn-se-connecter custom-green" (click)="toggleView()">
                     SE CONNECTER
                 </button>
                 } @else {
-                <!-- Login Form View -->
+                <div class="branding-logo">
+                    <div class="logo-placeholder">
+                        <div class="ball-icon">⚽</div>
+                        <div class="logo-text">ASC NATANGUÉ</div>
+                    </div>
+                </div>
+                <h3 class="branding-title text-white mt-4">Solution de Gestion Intégrée pour votre ASC</h3>
+                <button class="btn-en-savoir-plus white-outline" (click)="toggleView()">
+                    EN SAVOIR PLUS
+                </button>
+                }
+            </div>
+        </div>
+
+        <!-- ── PANE B: White Pane ───────────────── -->
+        <div class="auth-pane white-bg pane-b">
+            <div class="pane-content fade-in-up">
+                @if (!showForm()) {
+                <div class="branding-logo text-center">
+                    <div class="logo-placeholder">
+                        <div class="ball-icon">⚽</div>
+                        <div class="logo-text">ASC NATANGUÉ</div>
+                    </div>
+                </div>
+                <p class="branding-desc text-muted text-center mt-4">
+                    Plateforme intégrée conçue pour centraliser et simplifier l'ensemble des opérations de votre ASC.
+                    Du suivi des souscriptions à la comptabilité, pilotez toutes vos activités avec précision, fiabilité
+                    et conformité.
+                </p>
+                } @else {
                 <h2 class="form-title text-emerald">Connexion</h2>
 
                 <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
@@ -19,7 +48,7 @@
                         <label>Identifiant</label>
                         <input type="text" formControlName="username" class="form-control"
                             [class.is-invalid]="loginForm.get('username')?.touched && loginForm.get('username')?.invalid"
-                            placeholder="admin">
+                            placeholder="Votre email">
                     </div>
 
                     <div class="form-group">
@@ -28,7 +57,7 @@
                             <input [type]="showPassword() ? 'text' : 'password'" formControlName="password"
                                 class="form-control"
                                 [class.is-invalid]="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
-                                placeholder=".........">
+                                placeholder="Votre mot de passe">
                             <button type="button" class="btn-toggle-password" (click)="togglePassword()">
                                 @if (!showPassword()) {
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -61,33 +90,10 @@
                 }
             </div>
         </div>
-
-        <!-- ── Pane 2: Branding Content ───────────────── -->
-        <div class="auth-pane right" [class.white-bg]="!showForm()" [class.emerald-bg]="showForm()">
-            <div class="pane-content text-center fade-in-up">
-                <div class="branding-logo">
-                    <img src="https://backend.asc-natangue.com/storage/logos/cnaas-logo.png" alt="CNAAS Logo"
-                        class="logo-img">
-                </div>
-
-                @if (!showForm()) {
-                <p class="branding-desc text-muted">
-                    Plateforme intégrée conçue pour centraliser et simplifier l'ensemble de vos opérations d'assurance
-                    agricole. Du suivi des souscriptions à la gestion des sinistres, en passant par la relation client,
-                    pilotez toutes vos activités avec précision, fiabilité et conformité aux standards du CNAAS.
-                </p>
-                } @else {
-                <h3 class="branding-title text-white">Solution de Gestion d'Assurance Agricole du Sénégal</h3>
-                <button class="btn-en-savoir-plus white-outline">
-                    EN SAVOIR PLUS
-                </button>
-                }
-            </div>
-        </div>
     </div>
 
     <!-- Footer Copyright -->
-    <div class="auth-footer text-center">
-        <p>Design by <span class="fw-bold">WEBGRAM</span> - Copyright © 2025.</p>
+    <div class="auth-footer-bar">
+        <p>Design by <span class="fw-bold">WEBGRAM</span> - Copyright © 2026.</p>
     </div>
 </div>

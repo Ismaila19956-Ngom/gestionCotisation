@@ -1,0 +1,167 @@
+<div class="suivi-container">
+    <div class="header-actions">
+        <div>
+            <h2 style="margin: 0; color: #1b5e20;">Suivi de Campagne #{{ campagneId }}</h2>
+            <p style="margin: 0.5rem 0 0 0; color: #555;">Détails des cotisations réparties par catégorie de montant.
+            </p>
+        </div>
+        <div class="action-buttons">
+            <button class="btn btn-primary" (click)="addCotisationGlobal()"
+                style="background-color: #2e7d32; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                + Ajouter Cotisation
+            </button>
+            <button class="btn btn-import" (click)="openImportModal()"
+                style="background-color: #1b5e20; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    style="margin-right:8px;">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                    <line x1="17" y1="11" x2="23" y2="11"></line>
+                </svg>
+                Importer membres
+            </button>
+        </div>
+    </div>
+
+    <!-- Design avec Onglets Horizontaux pour les Catégories -->
+    <div class="categories-tabs">
+        <button *ngFor="let cat of categories" class="tab-btn" [class.active]="activeTab === cat.montant"
+            (click)="setActiveTab(cat.montant)">
+            Catégorie {{ cat.montant }} FCFA
+        </button>
+    </div>
+
+    <!-- Affichage sélectif du tableau actif -->
+    <div class="table-container" *ngFor="let cat of categories">
+        <div *ngIf="activeTab === cat.montant">
+
+            <div class="table-header-title">
+                <h3>Membres de la Catégorie : {{ cat.montant }} FCFA</h3>
+            </div>
+
+            <table class="antigravity-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Prénom</th>
+                        <th>Nom</th>
+                        <th>Sexe</th>
+                        <th>Date de Naissance</th>
+                        <th>Catégorie</th>
+                        <th>État</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let membre of getMembresByCategorie(cat.montant); let i = index">
+                        <td>{{ i + 1 }}</td>
+                        <td class="primary-text">{{ membre.prenom }}</td>
+                        <td class="primary-text">{{ membre.nom }}</td>
+                        <td>
+                            <span class="gender-badge" [ngClass]="membre.sexe === 'H' ? 'gender-m' : 'gender-f'">
+                                {{ membre.sexe === 'H' ? '♂ Homme' : '♀ Femme' }}
+                            </span>
+                        </td>
+                        <td>{{ membre.dateNaissance }}</td>
+                        <td>
+                            <span class="category-pill">{{ formatMontant(cat.montant) }}</span>
+                        </td>
+                        <td>
+                            <div class="count-badge"
+                                [ngClass]="(membre.unpaidMonthsCount || 0) > 0 ? 'delayed' : 'up-to-date'">
+                                <span class="count-number">
+                                    {{ (membre.unpaidMonthsCount || 0) > 0 ? 'En retard (' + membre.unpaidMonthsCount +
+                                    ')' : 'En règle' }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="actions">
+                            <button class="btn btn-icon btn-view" title="Détails & Cotisation"
+                                (click)="openDetailModal(membre)">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="getMembresByCategorie(cat.montant).length === 0">
+                        <td colspan="6" style="text-align: center; color: #888;">Aucun membre dans cette catégorie pour
+                            l'instant.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Détails & Cotisation -->
+<div class="modal-overlay fade-in" *ngIf="showDetailModal" (click)="closeDetailModal()">
+    <div class="modal-card wide-modal fade-in-up" (click)="$event.stopPropagation()">
+        <!-- Header Vert Foncé Style Antigravité -->
+        <div class="modal-header antigravite-header">
+            <div class="header-left">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M17 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M9 21v-2a4 4 0 0 1 4-4h1"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <h5>Suivi Cotisation - {{ selectedMembre?.prenom }} {{ selectedMembre?.nom }}</h5>
+            </div>
+            <button class="btn-close-modal" (click)="closeDetailModal()">&times;</button>
+        </div>
+
+        <div class="modal-content-body">
+            <div class="table-responsive-modal">
+                <table class="antigravity-table mini-table">
+                    <thead>
+                        <tr>
+                            <th>Mois</th>
+                            <th>Montant</th>
+                            <th>Statut</th>
+                            <th>Avance</th>
+                            <th>Reste</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let p of selectedMembre?.paiementsMensuels">
+                            <td class="fw-bold">{{ p.mois }}</td>
+                            <td>{{ formatMontant(p.montant) }}</td>
+                            <td>
+                                <select [(ngModel)]="p.statut" class="form-select-sm">
+                                    <option value="Payé">Payé</option>
+                                    <option value="En cours">En cours</option>
+                                    <option value="Retard">Retard</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" [(ngModel)]="p.avance" (ngModelChange)="onAvanceChange(p)"
+                                    class="form-input-sm" style="width: 100px;">
+                            </td>
+                            <td class="fw-bold" [ngClass]="p.reste > 0 ? 'text-danger' : 'text-success'">
+                                {{ formatMontant(p.reste) }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="form-actions-footer">
+                <button type="button" class="btn-cancel" (click)="closeDetailModal()">Annuler</button>
+                <button type="button" class="btn-save" (click)="onSaveDetail()">
+                    Enregistrer les modifications
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'Importation -->
+@if (showImportModal) {
+<app-cotisation-member-import-modal (close)="closeImportModal()" (import)="onMembersImported($event)">
+</app-cotisation-member-import-modal>
+}

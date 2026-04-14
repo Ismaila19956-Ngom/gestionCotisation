@@ -130,3 +130,22 @@
         background: var(--info);
     }
 }
+
+// ── Mobile Adjustments ────────────────────────────────
+.table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 767px) {
+    .cotisation-summary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .legend-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

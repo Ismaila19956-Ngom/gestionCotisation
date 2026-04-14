@@ -23,6 +23,7 @@ export class SidebarComponent {
     menuItems = signal<NavItem[]>([
         { label: 'Tableau de Bord', icon: 'grid', route: '/dashboard' },
         { label: 'Membres', icon: 'users', route: '/membres' },
+        { label: 'Cotisations', icon: 'credit-card', route: '/cotisations' },
         { label: 'Comptabilité', icon: 'bar-chart', route: '/comptabilite' },
         { label: 'Paramètres', icon: 'settings', route: '/parametres' },
     ]);

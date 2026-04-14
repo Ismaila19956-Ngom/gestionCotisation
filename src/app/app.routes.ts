@@ -3,6 +3,11 @@ import { MainLayoutComponent } from './layouts/main-layout/main-layout.component
 
 export const routes: Routes = [
     {
+        path: '',
+        redirectTo: 'login',
+        pathMatch: 'full'
+    },
+    {
         path: 'login',
         loadComponent: () =>
             import('./views/auth/login.component')
@@ -14,7 +19,7 @@ export const routes: Routes = [
         children: [
             {
                 path: '',
-                redirectTo: 'dashboard',
+                redirectTo: 'membres',
                 pathMatch: 'full'
             },
             {
@@ -48,6 +53,18 @@ export const routes: Routes = [
                         .then(m => m.FinanceComponent)
             },
             {
+                path: 'cotisations',
+                loadComponent: () =>
+                    import('./views/cotisations/cotisation-campaign-list.component')
+                        .then(m => m.CotisationCampaignListComponent)
+            },
+            {
+                path: 'cotisations/:id',
+                loadComponent: () =>
+                    import('./views/cotisations/cotisation-campaign-suivi.component')
+                        .then(m => m.CotisationCampaignSuiviComponent)
+            },
+            {
                 path: 'parametres',
                 loadComponent: () =>
                     import('./views/parametres/parametres.component')
@@ -57,6 +74,6 @@ export const routes: Routes = [
     },
     {
         path: '**',
-        redirectTo: 'dashboard'
+        redirectTo: 'login'
     }
 ];

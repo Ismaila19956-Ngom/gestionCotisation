@@ -2,23 +2,28 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     background: #f4f7f6;
-    padding: 2rem;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    position: relative;
+    justify-content: center;
+    align-items: center;
 }
 
 .auth-wrapper {
     display: flex;
-    width: 1000px;
+    flex-direction: row; // default: Welcome Screen (Green on Left, White on Right)
+    width: 900px;
     max-width: 95%;
-    min-height: 600px;
+    min-height: 500px;
     background: #fff;
     border-radius: 12px;
     overflow: hidden;
-    position: relative;
+    margin-bottom: 4rem; // Room for footer
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.show-form {
+        flex-direction: row-reverse; // Form Screen (White on Left, Green on Right)
+    }
 }
 
 .auth-pane {
@@ -27,21 +32,11 @@
     align-items: center;
     justify-content: center;
     padding: 3rem;
-    transition: all 0.5s ease;
-    position: relative;
-
-    &.left {
-        z-index: 2;
-    }
-
-    &.right {
-        z-index: 1;
-    }
 }
 
 .pane-content {
     width: 100%;
-    max-width: 400px;
+    max-width: 360px;
 }
 
 // ── Colors ──────────────────────────────────────────
@@ -68,59 +63,42 @@
 
 // ── Typography ──────────────────────────────────────
 
-.welcome-title {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin-bottom: 1rem;
-}
-
-.welcome-subtitle {
-    font-size: 1.1rem;
-    margin-bottom: 2.5rem;
-    opacity: 0.9;
-}
-
 .form-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 2.5rem;
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
     text-align: center;
 }
 
 .branding-title {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     font-weight: 700;
     line-height: 1.4;
     margin-bottom: 2rem;
-}
-
-.branding-desc {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    margin-top: 2rem;
 }
 
 // ── Forms ───────────────────────────────────────────
 
 .login-form {
     .form-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
 
         label {
             display: block;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #4a5568;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #1a202c;
             margin-bottom: 0.5rem;
         }
 
         .form-control {
             width: 100%;
-            padding: 0.85rem 1rem;
-            background: #f0f4f8;
+            padding: 0.8rem 1rem;
+            background: #f3f4f6;
             border: 1px solid transparent;
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            color: #4a5568;
             transition: all 0.2s;
 
             &:focus {
@@ -148,14 +126,14 @@
         transform: translateY(-50%);
         background: none;
         border: none;
-        color: #718096;
+        color: #a0aec0;
         cursor: pointer;
         padding: 4px;
         display: flex;
         align-items: center;
 
         &:hover {
-            color: #004d1a;
+            color: #4a5568;
         }
     }
 }
@@ -179,36 +157,46 @@
 
 // ── Buttons ─────────────────────────────────────────
 
-.btn-se-connecter {
-    padding: 0.85rem 2.5rem;
-    border-radius: 30px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
 .btn-submit {
     width: 100%;
-    padding: 1rem;
+    padding: 0.85rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s;
 
     &:hover {
         background: #003a13;
-        transform: translateY(-2px);
+        transform: translateY(-1px);
     }
 }
 
 .btn-en-savoir-plus {
+    padding: 0.75rem 2rem;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.custom-green {
     padding: 0.85rem 2.5rem;
     border-radius: 30px;
     font-weight: 700;
+    font-size: 0.95rem;
     cursor: pointer;
+    background: #2f855a; // Brighter green for contrast
+    color: #fff;
+    border: 2px solid #2f855a;
     transition: all 0.3s;
+
+    &:hover {
+        background: #276749;
+        border-color: #276749;
+    }
 }
 
 .white-outline {
@@ -226,23 +214,50 @@
 
 .branding-logo {
     margin-bottom: 2rem;
+}
 
-    .logo-img {
-        max-width: 200px;
-        height: auto;
+.logo-placeholder {
+    width: 140px;
+    height: 140px;
+    background: #fff;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+
+    .ball-icon {
+        font-size: 3rem;
+        margin-bottom: 8px;
+    }
+
+    .logo-text {
+        font-weight: 800;
+        color: #004d1a;
+        font-size: 0.9rem;
+        text-align: center;
+        line-height: 1.1;
     }
 }
 
 // ── Footer ──────────────────────────────────────────
 
-.auth-footer {
-    margin-top: 2rem;
-    color: #4a5568;
-    font-size: 0.9rem;
+.auth-footer-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: #003a13;
+    color: #fff;
+    text-align: center;
+    padding: 1rem 0;
+    font-size: 0.85rem;
 
     .fw-bold {
         font-weight: 700;
-        color: #000;
+        color: #fff;
     }
 }
 
@@ -251,7 +266,7 @@
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(10px);
     }
 
     to {
@@ -261,7 +276,7 @@
 }
 
 .fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
+    animation: fadeInUp 0.5s ease-out;
 }
 
 .shadow-premium {
@@ -278,17 +293,21 @@
 
 @media (max-width: 900px) {
     .auth-wrapper {
-        flex-direction: column;
+        flex-direction: column !important;
         width: 100%;
-        max-width: 500px;
+        max-width: 450px;
         min-height: auto;
+
+        &.show-form {
+            flex-direction: column-reverse !important;
+        }
     }
 
     .auth-pane {
         padding: 2.5rem 1.5rem;
     }
 
-    .branding-desc {
-        display: none; // Keep it clean on mobile
+    .branding-title {
+        font-size: 1rem;
     }
 }

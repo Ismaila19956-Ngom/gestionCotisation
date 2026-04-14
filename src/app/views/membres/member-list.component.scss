@@ -45,16 +45,29 @@
     width: 100%;
     border-collapse: collapse;
 
-    .dark-green-head {
-        th {
-            background: var(--primary-dark);
-            color: #fff;
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 1rem;
-            text-align: left;
+    thead.dark-green-head {
+        tr {
+            background-color: #384c3e !important;
+
+            th {
+                background-color: #384c3e !important;
+                color: #ffffff !important;
+                font-weight: 700;
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                padding: 1.25rem 1rem;
+                border: none !important;
+                text-align: left;
+
+                &:first-child {
+                    border-top-left-radius: 8px;
+                }
+
+                &:last-child {
+                    border-top-right-radius: 8px;
+                }
+            }
         }
     }
 
