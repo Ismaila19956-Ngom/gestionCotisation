@@ -1,0 +1,57 @@
+<div class="params-container fade-in">
+
+    <!-- En-tête -->
+    <div class="page-header">
+        <div>
+            <h4>Paramètres</h4>
+            <p>Gestion de la configuration de l'ASC Natangué</p>
+        </div>
+    </div>
+
+    <!-- Carte principale -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Gestion des Catégories de Cotisation</h3>
+            <p>Définissez les différents montants de cotisation possibles pour les campagnes.</p>
+        </div>
+
+        <!-- Formulaire d'ajout -->
+        <div class="add-form">
+            <div class="input-group">
+                <label>Nouveau Montant (FCFA)</label>
+                <input type="number" [(ngModel)]="nouveauMontant" placeholder="Ex: 1500" class="form-input">
+            </div>
+            <button (click)="ajouterCategorie()" class="btn-add">+ Ajouter</button>
+        </div>
+
+        <!-- Tableau responsive -->
+        <div class="table-wrapper">
+            <table class="cat-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Montant (FCFA)</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let cat of categories">
+                        <td data-label="ID">{{ cat.id }}</td>
+                        <td data-label="Montant" class="montant">{{ cat.montant | number }} FCFA</td>
+                        <td data-label="Statut">
+                            <span class="badge badge-actif" *ngIf="cat.actif">Actif</span>
+                            <span class="badge badge-inactif" *ngIf="!cat.actif">Inactif</span>
+                        </td>
+                        <td data-label="Actions">
+                            <button (click)="toggleStatut(cat)"
+                                [class]="cat.actif ? 'btn-toggle btn-deactivate' : 'btn-toggle btn-activate'">
+                                {{ cat.actif ? 'Désactiver' : 'Activer' }}
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

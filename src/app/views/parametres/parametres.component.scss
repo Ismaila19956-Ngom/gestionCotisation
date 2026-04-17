@@ -1,0 +1,214 @@
+.params-container {
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+
+    .page-header {
+        margin-bottom: 1.5rem;
+
+        h4 {
+            margin: 0;
+            color: #1b5e20;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        p {
+            margin: 0.4rem 0 0 0;
+            color: #555;
+            font-size: 0.9rem;
+        }
+    }
+
+    .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #edf2f7;
+
+            h3 {
+                margin: 0 0 0.4rem 0;
+                color: #2e7d32;
+                font-size: 1.1rem;
+                font-weight: 700;
+            }
+
+            p {
+                margin: 0;
+                color: #666;
+                font-size: 0.85rem;
+            }
+        }
+
+        // Formulaire d'ajout
+        .add-form {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #edf2f7;
+            flex-wrap: wrap;
+
+            .input-group {
+                flex: 1;
+                min-width: 180px;
+
+                label {
+                    display: block;
+                    margin-bottom: 0.4rem;
+                    font-weight: 600;
+                    font-size: 0.85rem;
+                    color: #475569;
+                }
+
+                .form-input {
+                    width: 100%;
+                    padding: 0.65rem 0.9rem;
+                    border: 1px solid #cbd5e1;
+                    border-radius: 8px;
+                    font-size: 0.95rem;
+                    box-sizing: border-box;
+                    transition: 0.2s;
+
+                    &:focus {
+                        outline: none;
+                        border-color: #2e7d32;
+                        box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+                    }
+                }
+            }
+
+            .btn-add {
+                background: #2e7d32;
+                color: white;
+                border: none;
+                padding: 0.65rem 1.4rem;
+                border-radius: 8px;
+                font-weight: 700;
+                font-size: 0.9rem;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: background 0.2s;
+
+                &:hover {
+                    background: #1b5e20;
+                }
+            }
+        }
+
+        // Tableau
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .cat-table {
+            width: 100%;
+            min-width: 420px;
+            border-collapse: collapse;
+
+            thead tr {
+                background: #f1f8e9;
+                border-bottom: 2px solid #c8e6c9;
+            }
+
+            th {
+                padding: 0.9rem 1rem;
+                font-size: 0.75rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                color: #2e7d32;
+                text-align: left;
+            }
+
+            td {
+                padding: 0.85rem 1rem;
+                font-size: 0.9rem;
+                border-bottom: 1px solid #f0f4f8;
+                color: #374151;
+            }
+
+            tr:last-child td {
+                border-bottom: none;
+            }
+
+            tr:hover td {
+                background: #f9fafb;
+            }
+
+            .montant {
+                font-weight: 700;
+                color: #2e7d32;
+            }
+        }
+
+        // Badges
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+
+            &.badge-actif {
+                background: #e8f5e9;
+                color: #2e7d32;
+            }
+
+            &.badge-inactif {
+                background: #ffebee;
+                color: #c62828;
+            }
+        }
+
+        // Boutons toggle
+        .btn-toggle {
+            border: none;
+            padding: 0.4rem 0.9rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.2s;
+
+            &.btn-deactivate {
+                background: #f1f5f9;
+                color: #475569;
+
+                &:hover {
+                    background: #e2e8f0;
+                }
+            }
+
+            &.btn-activate {
+                background: #e8f5e9;
+                color: #2e7d32;
+
+                &:hover {
+                    background: #c8e6c9;
+                }
+            }
+        }
+    }
+
+    // --- Responsivité mobile ---
+    @media (max-width: 480px) {
+        padding: 1rem;
+
+        .card .add-form {
+            flex-direction: column;
+            align-items: stretch;
+
+            .btn-add {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    }
+}

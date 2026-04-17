@@ -18,7 +18,9 @@ export class CotisationCampaignListComponent implements OnInit {
         annee: new Date().getFullYear(),
         libelle: '',
         moisDebut: new Date().getMonth() + 1,
-        moisFin: new Date().getMonth() + 1
+        moisFin: new Date().getMonth() + 1,
+        dateDebutCotisation: '',
+        dateFinCotisation: ''
     };
 
     annees: number[] = [];
@@ -72,7 +74,9 @@ export class CotisationCampaignListComponent implements OnInit {
             annee: new Date().getFullYear(),
             libelle: '',
             moisDebut: new Date().getMonth() + 1,
-            moisFin: new Date().getMonth() + 1
+            moisFin: new Date().getMonth() + 1,
+            dateDebutCotisation: '',
+            dateFinCotisation: ''
         };
     }
 

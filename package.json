@@ -31,8 +31,11 @@
     "@angular/platform-server": "^20.3.0",
     "@angular/router": "^20.3.0",
     "@angular/ssr": "^20.3.9",
+    "@supabase/supabase-js": "^2.103.3",
+    "@types/sql.js": "^1.4.11",
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
+    "sql.js": "^1.14.1",
     "tslib": "^2.3.0"
   },
   "devDependencies": {

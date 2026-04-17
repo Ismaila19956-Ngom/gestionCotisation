@@ -36,8 +36,12 @@
     <div class="table-container" *ngFor="let cat of categories">
         <div *ngIf="activeTab === cat.montant">
 
-            <div class="table-header-title">
+            <div class="table-header-title" style="display: flex; justify-content: space-between; align-items: center;">
                 <h3>Membres de la Catégorie : {{ cat.montant }} FCFA</h3>
+                <div class="total-badge"
+                    style="background:#f0fdf4; color:#16a34a; padding:0.5rem 1rem; border-radius:8px; font-weight:700;">
+                    Total Encaissé : {{ getTotalPayeByCategorie(cat.montant) | number }} FCFA
+                </div>
             </div>
 
             <table class="antigravity-table">
@@ -47,9 +51,9 @@
                         <th>Prénom</th>
                         <th>Nom</th>
                         <th>Sexe</th>
-                        <th>Date de Naissance</th>
                         <th>Catégorie</th>
                         <th>État</th>
+                        <th>Montant Encaissé</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -63,7 +67,6 @@
                                 {{ membre.sexe === 'H' ? '♂ Homme' : '♀ Femme' }}
                             </span>
                         </td>
-                        <td>{{ membre.dateNaissance }}</td>
                         <td>
                             <span class="category-pill">{{ formatMontant(cat.montant) }}</span>
                         </td>
@@ -75,6 +78,9 @@
                                     ')' : 'En règle' }}
                                 </span>
                             </div>
+                        </td>
+                        <td class="primary-text" [ngClass]="{'text-success': (membre.paiementsMensuels?.length)}">
+                            {{ ((membre.paiementsMensuels ? getTotalEncaisseMembre(membre) : 0)) | number }} FCFA
                         </td>
                         <td class="actions">
                             <button class="btn btn-icon btn-view" title="Détails & Cotisation"
@@ -128,15 +134,21 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let p of selectedMembre?.paiementsMensuels">
-                            <td class="fw-bold">{{ p.mois }}</td>
+                        <tr *ngFor="let p of selectedMembre?.paiementsMensuels"
+                            [class.current-month-row]="isCurrentMonth(p.mois)">
+                            <td class="fw-bold">
+                                {{ p.mois }}
+                                <span *ngIf="isCurrentMonth(p.mois)" class="badge-current-month">Mois actuel</span>
+                            </td>
                             <td>{{ formatMontant(p.montant) }}</td>
                             <td>
-                                <select [(ngModel)]="p.statut" class="form-select-sm">
-                                    <option value="Payé">Payé</option>
-                                    <option value="En cours">En cours</option>
-                                    <option value="Retard">Retard</option>
-                                </select>
+                                <span class="statut-badge" [ngClass]="{
+                                        'statut-paye': p.statut === 'Payé',
+                                        'statut-encours': p.statut === 'En cours',
+                                        'statut-retard': p.statut === 'En retard'
+                                    }">
+                                    {{ p.statut }}
+                                </span>
                             </td>
                             <td>
                                 <input type="number" [(ngModel)]="p.avance" (ngModelChange)="onAvanceChange(p)"
