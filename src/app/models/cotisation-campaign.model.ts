@@ -11,13 +11,15 @@ export interface Campagne {
     libelle: string;
     moisDebut: number;
     moisFin: number;
+    dateDebutCotisation?: string;
+    dateFinCotisation?: string;
     statut: 'EN_COURS' | 'CLOTUREE' | 'A_VENIR';
 }
 
 export interface PaiementMensuel {
     mois: string;
     montant: number;
-    statut: 'Payé' | 'En cours' | 'Retard';
+    statut: 'Payé' | 'En cours' | 'En retard';
     avance: number;
     reste: number;
 }

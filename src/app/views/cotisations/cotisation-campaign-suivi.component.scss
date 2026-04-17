@@ -374,6 +374,50 @@
         font-weight: 700;
     }
 
+    /* ── Styles du Mois Courant & Badges Statut ── */
+    .current-month-row {
+        background-color: #f0fdf4 !important;
+
+        td {
+            border-bottom: 1px solid #bbf7d0;
+        }
+    }
+
+    .badge-current-month {
+        display: inline-block;
+        margin-left: 8px;
+        background: #10b981;
+        color: white;
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .statut-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+
+        &.statut-paye {
+            background-color: #d1fae5;
+            color: #059669;
+        }
+
+        &.statut-encours {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        &.statut-retard {
+            background-color: #fee2e2;
+            color: #dc2626;
+        }
+    }
+
     .form-actions-footer {
         display: flex;
         justify-content: flex-end;

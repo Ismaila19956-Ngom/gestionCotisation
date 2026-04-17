@@ -46,9 +46,46 @@ export class CotisationCampaignSuiviComponent implements OnInit {
     ngOnInit() {
         this.route.paramMap.subscribe(params => {
             this.campagneId = Number(params.get('id'));
-            // Simuler le chargement des données pour this.campagneId
+            this.initMockDataGlobale();
         });
     }
+
+    // --- Génération globale des données mockées ---
+    initMockDataGlobale() {
+        // Configuration de la campagne (Juillet à Octobre)
+        this.availableMonths = this.generateMonths(7, 10);
+
+        this.membres.forEach(membre => {
+            const cat = this.categories.find(c => c.id === membre.categorieId);
+            const montantInitial = cat ? cat.montant : 0;
+
+            membre.paiementsMensuels = this.availableMonths.map(mois => {
+                let avanceMock = montantInitial; // Payé par défaut pour la plupart
+
+                // Scénario : Modou Diop (ID: 102) a exactement 2 mois de retard (Aout et Septembre non payés)
+                if (membre.memberId === 102) {
+                    const moisIdx = this.getMoisIndex(mois);
+                    if (moisIdx === 8 || moisIdx === 9) avanceMock = 0;
+                }
+
+                // Scénario : Ibrahima Fall (ID: 104) n'a rien payé du tout (Retard total)
+                if (membre.memberId === 104) {
+                    avanceMock = 0;
+                }
+
+                return {
+                    mois: mois,
+                    montant: montantInitial,
+                    statut: this.calculateStatutMensuel(mois, avanceMock, montantInitial),
+                    avance: avanceMock,
+                    reste: Math.max(0, montantInitial - avanceMock)
+                };
+            });
+
+            this.recalculerNombreMoisEnRetard(membre);
+        });
+    }
+
 
     setActiveTab(montant: number) {
         this.activeTab = montant;
@@ -58,6 +95,20 @@ export class CotisationCampaignSuiviComponent implements OnInit {
         const cat = this.categories.find(c => c.montant === montant);
         if (!cat) return [];
         return this.membres.filter(m => m.categorieId === cat.id);
+    }
+
+    // Calcule le montant total encaissé (payé) pour une catégorie donnée
+    getTotalPayeByCategorie(montant: number): number {
+        const membresCat = this.getMembresByCategorie(montant);
+        return membresCat.reduce((totalCat, membre) => {
+            const totalMembre = (membre.paiementsMensuels || []).reduce((sum, p) => sum + (p.avance || 0), 0);
+            return totalCat + totalMembre;
+        }, 0);
+    }
+
+    // Obtenir le total encaissé pour un membre en particulier
+    getTotalEncaisseMembre(membre: MembreCotisation): number {
+        return (membre.paiementsMensuels || []).reduce((sum, p) => sum + (p.avance || 0), 0);
     }
 
     openImportModal() {
@@ -131,34 +182,74 @@ export class CotisationCampaignSuiviComponent implements OnInit {
         return list;
     }
 
+    // ─── RÈGLE MÉTIER DU 10 DU MOIS ─────────────────────────────────────────────
+    // Retourne l'index du mois (1-12) à partir du nom
+    getMoisIndex(nomMois: string): number {
+        return this.monthNames.indexOf(nomMois) + 1;
+    }
+
+    // Retourne vrai si la ligne est le mois courant
+    isCurrentMonth(nomMois: string): boolean {
+        const now = new Date();
+        return this.getMoisIndex(nomMois) === now.getMonth() + 1;
+    }
+
+    /**
+     * Calcule le statut d'un mois selon la règle métier :
+     * - Mois futur       → "En cours"
+     * - Mois passé, non payé → "En retard"
+     * - Mois courant avant le 10 → "En cours"
+     * - Mois courant après le 10, non payé → "En retard"
+     * - Avance >= montant → "Payé"
+     */
+    calculateStatutMensuel(nomMois: string, avance: number, montant: number): 'Payé' | 'En cours' | 'En retard' {
+        if (avance >= montant) return 'Payé';
+
+        const now = new Date();
+        const currentMonth = now.getMonth() + 1; // 1-12
+        const currentDay = now.getDate();
+        const moisIndex = this.getMoisIndex(nomMois);
+
+        if (moisIndex > currentMonth) {
+            return 'En cours'; // Mois futur
+        } else if (moisIndex < currentMonth) {
+            return 'En retard'; // Mois passé non payé
+        } else {
+            // Mois courant
+            return currentDay >= 10 ? 'En retard' : 'En cours';
+        }
+    }
+
+    // Recalcule unpaidMonthsCount à partir des paiements mensuels
+    recalculerNombreMoisEnRetard(membre: MembreCotisation) {
+        if (!membre.paiementsMensuels) return;
+        membre.unpaidMonthsCount = membre.paiementsMensuels.filter(
+            p => p.statut === 'En retard'
+        ).length;
+    }
+    // ─────────────────────────────────────────────────────────────────────────────
+
     openDetailModal(membre: MembreCotisation) {
         this.selectedMembre = membre;
-        const cat = this.categories.find(c => c.id === membre.categorieId);
-        const montantInitial = cat ? cat.montant : 0;
-
-        // Si le membre n'a pas encore de paiements mensuels, on les initialise
-        if (!membre.paiementsMensuels || membre.paiementsMensuels.length === 0) {
-            // Configuration demandée : Juillet (7) à Octobre (10)
-            this.availableMonths = this.generateMonths(7, 10);
-            membre.paiementsMensuels = this.availableMonths.map(m => ({
-                mois: m,
-                montant: montantInitial,
-                statut: 'En cours',
-                avance: 0,
-                reste: montantInitial
-            }));
-        }
-
         this.showDetailModal = true;
     }
 
     onAvanceChange(paiement: any) {
-        paiement.reste = (paiement.montant || 0) - (paiement.avance || 0);
+        paiement.reste = Math.max(0, (paiement.montant || 0) - (paiement.avance || 0));
         if (paiement.reste <= 0) {
             paiement.statut = 'Payé';
             paiement.reste = 0;
-        } else if (paiement.avance > 0) {
-            paiement.statut = 'En cours';
+        } else {
+            // Recalcul dynamique selon la règle du 10
+            paiement.statut = this.calculateStatutMensuel(
+                paiement.mois,
+                paiement.avance,
+                paiement.montant
+            );
+        }
+        // Mettre à jour le badge dans le tableau principal
+        if (this.selectedMembre) {
+            this.recalculerNombreMoisEnRetard(this.selectedMembre);
         }
     }
 
