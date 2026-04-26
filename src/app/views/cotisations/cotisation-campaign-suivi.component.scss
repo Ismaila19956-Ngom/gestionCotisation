@@ -265,21 +265,21 @@
     backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
-    align-items: flex-start; // Aligner en haut pour permettre le scroll
-    z-index: 9999;
-    padding: 2rem 1rem;
-    overflow-y: auto; // Permettre le scroll sur toute l'overlay
+    align-items: flex-start;
+    z-index: 1050;
+    padding: 1.5rem 0.5rem; // Réduit pour mobile
+    overflow-y: auto;
 }
 
 .modal-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 12px; // Un peu plus carré sur mobile
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     overflow: hidden;
     animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    max-width: 95vw;
+    max-width: 100%; // Prend toute la largeur si besoin
     width: 100%;
-    margin: auto;
+    margin: 0 auto;
 }
 
 .antigravite-header {
@@ -328,14 +328,15 @@
     padding: 1.5rem;
 
     .table-responsive-modal {
-        overflow-y: visible; /* Enlever le scroll interne */
+        overflow-x: auto; /* Permettre le scroll horizontal sur mobile */
         border-radius: 8px;
         border: 1px solid #edf2f7;
         margin-bottom: 1.5rem;
+        -webkit-overflow-scrolling: touch;
     }
-
+    
     .mini-table {
-        min-width: 100% !important;
+        min-width: 600px !important; /* Forcer une largeur minimale pour activer le scroll horizontal */
 
         th {
             padding: 0.75rem 1rem !important;
@@ -343,11 +344,24 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            background-color: #f8fafc;
+            white-space: nowrap;
         }
 
         td {
             padding: 0.6rem 1rem !important;
             font-size: 0.85rem !important;
+            white-space: nowrap;
+        }
+    }
+
+    /* Ajustements spécifiques pour mobile */
+    @media (max-width: 640px) {
+        .mini-table {
+            td, th {
+                padding: 0.5rem 0.75rem !important;
+                font-size: 0.8rem !important;
+            }
         }
     }
 
@@ -503,4 +517,9 @@
             }
         }
     }
+}
+
+/* S'assurer que SweetAlert est toujours au-dessus des modals */
+::ng-deep .swal2-container {
+    z-index: 99999 !important;
 }

@@ -144,49 +144,14 @@
     </div>
 
     <!-- Pagination Inspired by CNAAS -->
-    <div class="pagination-bar">
-        <div class="pagination-left">
-            <span>Afficher </span>
-            <select class="page-size-select" [value]="itemsPerPage()"
-                (change)="itemsPerPage.set(+$any($event.target).value); currentPage.set(1)">
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-            </select>
-            <span> lignes</span>
-        </div>
-
-        <div class="pagination-center">
-            Page {{currentPage()}} sur {{totalPages()}} · {{totalItems()}} résultat(s)
-        </div>
-
-        <div class="pagination-right">
-            <button class="btn-pagination" [disabled]="currentPage() === 1" (click)="setPage(1)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="11 17 6 12 11 7" />
-                    <polyline points="18 17 13 12 18 7" />
-                </svg>
-            </button>
-            <button class="btn-pagination" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="15 18 9 12 15 6" />
-                </svg>
-            </button>
-            <button class="btn-pagination active">{{currentPage()}}</button>
-            <button class="btn-pagination" [disabled]="currentPage() === totalPages()"
-                (click)="setPage(currentPage() + 1)">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="9 18 15 12 9 6" />
-                </svg>
-            </button>
-            <button class="btn-pagination" [disabled]="currentPage() === totalPages()" (click)="setPage(totalPages())">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="13 17 18 12 13 7" />
-                    <polyline points="6 17 11 12 6 7" />
-                </svg>
-            </button>
-        </div>
-    </div>
+    <app-pagination 
+        [currentPage]="currentPage()" 
+        [totalPages]="totalPages()" 
+        [totalItems]="totalItems()" 
+        [itemsPerPage]="itemsPerPage()"
+        (pageChange)="setPage($event)"
+        (pageSizeChange)="itemsPerPage.set($event); currentPage.set(1)">
+    </app-pagination>
 </div>
 
 <!-- ── Modals ───────────────────────────────────────── -->

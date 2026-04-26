@@ -407,32 +407,150 @@
   to { transform: rotate(360deg); }
 }
 
-/* Mobile Responsive */
+/* Mobile Responsive and Hamburger Menu */
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1002;
+}
+
 @media (max-width: 992px) {
-  .hero-title {
-    font-size: 3.5rem;
+  .top-bar {
+    display: none;
   }
+
+  .navbar-container {
+    height: 70px;
+    padding: 0 1rem;
+  }
+
+  .mobile-toggle {
+    display: block;
+    order: 3;
+  }
+
+  .logo {
+    order: 1;
+    .logo-text { font-size: 1.1rem; }
+  }
+
+  .nav-actions {
+    order: 2;
+    margin-left: auto;
+    margin-right: 0.5rem;
+    
+    .icon-btn:not([title="Recherche"]) {
+      display: none;
+    }
+
+    .btn-login {
+      padding: 0.5rem 0.8rem;
+      font-size: 0.85rem;
+      margin-left: 0.25rem;
+      
+      svg { display: none; }
+    }
+  }
+
   .nav-links {
-    display: none; /* In a real app, implement a hamburger menu */
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 80%;
+    max-width: 300px;
+    height: 100vh;
+    background: #222222;
+    flex-direction: column;
+    padding-top: 80px;
+    transition: right 0.3s ease;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+    z-index: 1001;
+
+    &.show-mobile {
+      right: 0;
+      display: flex;
+    }
+
+    .nav-link {
+      height: 60px;
+      padding: 0 2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      width: 100%;
+      
+      &.active {
+        background: var(--accent-color);
+        color: #451a03;
+      }
+    }
+
+    .dropdown-container {
+      height: auto;
+      flex-direction: column;
+      
+      .dropdown-toggle {
+        height: 60px;
+        padding: 0 2rem;
+        justify-content: flex-start;
+        width: 100%;
+        color: #e2e8f0;
+      }
+
+      .dropdown-menu {
+        position: static;
+        width: 100%;
+        box-shadow: none;
+        background: #2a2a2a;
+        border-top: none;
+        border-radius: 0;
+        padding: 0;
+
+        .dropdown-item {
+          padding: 0.75rem 3rem;
+          border-bottom: 1px solid rgba(255,255,255,0.05);
+          
+          .cat-title { color: white; }
+          .cat-desc { color: #94a3b8; }
+        }
+      }
+    }
   }
+
+  .hero-section {
+    height: calc(100vh - 70px);
+    min-height: auto;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    
+    button { width: 100%; justify-content: center; }
+  }
+
   .hero-badge {
     display: none;
   }
 }
 
-@media (max-width: 768px) {
-  .hero-title {
-    font-size: 2.5rem;
-  }
-  .top-bar {
+@media (max-width: 480px) {
+  .logo-text {
     display: none;
-  }
-  .hero-buttons {
-    flex-direction: column;
-    
-    button {
-      width: 100%;
-      justify-content: center;
-    }
   }
 }

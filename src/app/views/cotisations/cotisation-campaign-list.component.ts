@@ -2,13 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 import { Campagne } from '../../models/cotisation-campaign.model';
 import { membresCampagneData } from '../../models/membres_asc.data';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
 @Component({
     selector: 'app-cotisation-campaign-list',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, PaginationComponent],
     templateUrl: './cotisation-campaign-list.component.html',
     styleUrls: ['./cotisation-campaign-list.component.scss']
 })
@@ -41,6 +43,13 @@ export class CotisationCampaignListComponent implements OnInit {
     ];
 
     campagnes: Campagne[] = [];
+    paginatedCampagnes: Campagne[] = [];
+
+    // Pagination
+    currentPage = 1;
+    itemsPerPage = 10;
+    totalItems = 0;
+    totalPages = 1;
 
     isModalOpen = false;
 
@@ -65,6 +74,7 @@ export class CotisationCampaignListComponent implements OnInit {
         if (data) {
             try {
                 this.campagnes = JSON.parse(data);
+                this.updatePagination();
             } catch (e) {
                 console.error('Erreur lecture localStorage', e);
                 this.campagnes = [];
@@ -74,6 +84,31 @@ export class CotisationCampaignListComponent implements OnInit {
 
     saveCampagnesToStorage() {
         localStorage.setItem(this.storageKey, JSON.stringify(this.campagnes));
+        this.updatePagination();
+    }
+
+    updatePagination() {
+        this.totalItems = this.campagnes.length;
+        this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage) || 1;
+        
+        // S'assurer que la page courante est valide
+        if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
+        if (this.currentPage < 1) this.currentPage = 1;
+
+        const start = (this.currentPage - 1) * this.itemsPerPage;
+        const end = start + this.itemsPerPage;
+        this.paginatedCampagnes = this.campagnes.slice(start, end);
+    }
+
+    setPage(page: number) {
+        this.currentPage = page;
+        this.updatePagination();
+    }
+
+    onPageSizeChange(size: number) {
+        this.itemsPerPage = size;
+        this.currentPage = 1;
+        this.updatePagination();
     }
 
     openModal() {
@@ -179,10 +214,15 @@ export class CotisationCampaignListComponent implements OnInit {
             // Calculer un total de la campagne pour le notifier (facultatif)
             const totalGeneral = membresCampagne.reduce((total: number, m: any) => total + (m.montantTotalEncaisse || 0), 0);
             
-            alert(`Campagne sauvegardée avec succès ! ${membresCampagne.length} membres importés. (Total estimé : ${totalGeneral} FCFA)`);
+            Swal.fire({
+                title: 'Succès !',
+                text: `Campagne sauvegardée avec succès ! ${membresCampagne.length} membres importés.`,
+                icon: 'success',
+                confirmButtonColor: '#1b5e20'
+            });
         } catch (e) {
             console.error("Erreur lors de l'import des membres", e);
-            alert("Campagne sauvegardée mais une erreur s'est produite lors de l'import des membres.");
+            Swal.fire('Erreur', "Campagne sauvegardée mais une erreur s'est produite lors de l'import des membres.", 'error');
         }
 
         this.nouvelleCampagne = {
@@ -200,14 +240,28 @@ export class CotisationCampaignListComponent implements OnInit {
     }
 
     deleteCampagne(id: any) {
-        if (window.confirm('Voulez-vous vraiment supprimer cette campagne et toutes ses données de cotisation ?')) {
-            // Supprimer la campagne de la liste en gérant la conversion type string/number
-            this.campagnes = this.campagnes.filter(c => Number(c.id) !== Number(id));
-            this.saveCampagnesToStorage();
-            
-            // Supprimer les membres associés à cette campagne du localStorage
-            localStorage.removeItem(`natangue_campagne_${id}_membres_v2`);
-        }
+        Swal.fire({
+            title: 'Confirmation',
+            text: 'Voulez-vous vraiment supprimer cette campagne et toutes ses données ?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Oui, supprimer',
+            cancelButtonText: 'Non'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                this.campagnes = this.campagnes.filter(c => Number(c.id) !== Number(id));
+                this.saveCampagnesToStorage();
+                localStorage.removeItem(`natangue_campagne_${id}_membres_v2`);
+                
+                Swal.fire(
+                    'Supprimé !',
+                    'La campagne a été supprimée.',
+                    'success'
+                );
+            }
+        });
     }
 
     getMoisLabel(val: number): string {
