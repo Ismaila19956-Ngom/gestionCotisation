@@ -21,6 +21,7 @@ export class SidebarComponent {
     currentYear = new Date().getFullYear();
 
     menuItems = signal<NavItem[]>([
+        { label: 'Accueil Public', icon: 'home', route: '/' },
         { label: 'Tableau de Bord', icon: 'grid', route: '/dashboard' },
         { label: 'Membres', icon: 'users', route: '/membres' },
         { label: 'Cotisations', icon: 'credit-card', route: '/cotisations' },

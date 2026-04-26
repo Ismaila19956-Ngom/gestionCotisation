@@ -1,12 +1,13 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { CotisationService } from '../../services/cotisation.service';
 import { MemberService } from '../../services/member.service';
 
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, RouterLink],
     templateUrl: './dashboard.component.html',
     styleUrls: ['./dashboard.component.scss']
 })

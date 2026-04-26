@@ -1,12 +1,13 @@
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { MemberService } from '../../../services/member.service';
 import { Member, CategorieCotisation } from '../../../models/cotisation.model';
 
 @Component({
     selector: 'app-cotisation-list',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, RouterLink],
     templateUrl: './cotisation-list.component.html',
     styleUrls: ['./cotisation-list.component.scss']
 })

@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MemberService } from '../../services/member.service';
 import { Member, CategorieCotisation } from '../../models/cotisation.model';
 import { ContributionFormComponent } from './contribution-form.component';
@@ -10,7 +10,7 @@ import { MemberFormComponent } from './member-form.component';
 @Component({
     selector: 'app-member-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, ContributionFormComponent, MemberFormComponent],
+    imports: [CommonModule, FormsModule, ContributionFormComponent, MemberFormComponent, RouterLink],
     templateUrl: './member-list.component.html',
     styleUrls: ['./member-list.component.scss']
 })
