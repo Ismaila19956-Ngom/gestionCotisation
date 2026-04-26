@@ -6,11 +6,12 @@ import { MemberService } from '../../services/member.service';
 import { Member, CategorieCotisation } from '../../models/cotisation.model';
 import { ContributionFormComponent } from './contribution-form.component';
 import { MemberFormComponent } from './member-form.component';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
 @Component({
     selector: 'app-member-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, ContributionFormComponent, MemberFormComponent, RouterLink],
+    imports: [CommonModule, FormsModule, ContributionFormComponent, MemberFormComponent, RouterLink, PaginationComponent],
     templateUrl: './member-list.component.html',
     styleUrls: ['./member-list.component.scss']
 })

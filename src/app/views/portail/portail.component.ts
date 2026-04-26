@@ -18,8 +18,13 @@ export class PortailComponent {
   ];
 
   isDropdownOpen = false;
+  isMobileMenuOpen = false;
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  toggleMobileMenu() {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
 }

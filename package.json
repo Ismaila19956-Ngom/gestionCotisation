@@ -34,8 +34,11 @@
     "@supabase/supabase-js": "^2.103.3",
     "@types/sql.js": "^1.4.11",
     "express": "^5.1.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "rxjs": "~7.8.0",
     "sql.js": "^1.14.1",
+    "sweetalert2": "^11.26.24",
     "tslib": "^2.3.0"
   },
   "devDependencies": {

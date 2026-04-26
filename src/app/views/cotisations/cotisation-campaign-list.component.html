@@ -25,8 +25,8 @@
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let camp of campagnes; let i = index">
-                    <td>{{ i + 1 }}</td>
+                <tr *ngFor="let camp of paginatedCampagnes; let i = index">
+                    <td>{{ (currentPage - 1) * itemsPerPage + i + 1 }}</td>
                     <td class="primary-text">{{ camp.libelle }}</td>
                     <td>{{ camp.annee }}</td>
                     <td>{{ getMoisLabel(camp.moisDebut) }} - {{ getMoisLabel(camp.moisFin) }}</td>
@@ -45,6 +45,15 @@
                 </tr>
             </tbody>
         </table>
+
+        <app-pagination 
+            [currentPage]="currentPage" 
+            [totalPages]="totalPages" 
+            [totalItems]="totalItems" 
+            [itemsPerPage]="itemsPerPage"
+            (pageChange)="setPage($event)"
+            (pageSizeChange)="onPageSizeChange($event)">
+        </app-pagination>
     </div>
 </div>
 

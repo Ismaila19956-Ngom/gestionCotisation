@@ -2,13 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 import { Categorie, MembreCotisation } from '../../models/cotisation-campaign.model';
 import { CotisationMemberImportModalComponent } from './cotisation-member-import-modal.component';
 
 @Component({
     selector: 'app-cotisation-campaign-suivi',
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, CotisationMemberImportModalComponent, RouterLink],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, CotisationMemberImportModalComponent, RouterLink, PaginationComponent],
     templateUrl: './cotisation-campaign-suivi.component.html',
     styleUrls: ['./cotisation-campaign-suivi.component.scss']
 })
@@ -31,6 +36,12 @@ export class CotisationCampaignSuiviComponent implements OnInit {
 
     // Modal Détails & Cotisation
     showDetailModal: boolean = false;
+    showSuccessMessage = false;
+
+    // Pagination
+    currentPage = 1;
+    itemsPerPage = 10;
+
     selectedMembre: MembreCotisation | null = null;
     detailForm!: FormGroup;
     monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
@@ -105,12 +116,34 @@ export class CotisationCampaignSuiviComponent implements OnInit {
 
     setActiveTab(montant: number) {
         this.activeTab = montant;
+        this.currentPage = 1; // Reset pagination quand on change de catégorie
     }
 
     getMembresByCategorie(montant: number) {
         const cat = this.categories.find(c => c.montant === montant);
         if (!cat) return [];
         return this.membres.filter((m: any) => m.categorieId === cat.id || m.categorie === montant);
+    }
+
+    getPaginatedMembresByCategorie(montant: number) {
+        const list = this.getMembresByCategorie(montant);
+        const start = (this.currentPage - 1) * this.itemsPerPage;
+        const end = start + this.itemsPerPage;
+        return list.slice(start, end);
+    }
+
+    getTotalPagesCategorie(montant: number): number {
+        const total = this.getMembresByCategorie(montant).length;
+        return Math.ceil(total / this.itemsPerPage) || 1;
+    }
+
+    onPageChange(page: number) {
+        this.currentPage = page;
+    }
+
+    onPageSizeChange(size: number) {
+        this.itemsPerPage = size;
+        this.currentPage = 1;
     }
 
     // Calcule le montant total encaissé (payé) pour une catégorie donnée
@@ -319,9 +352,9 @@ export class CotisationCampaignSuiviComponent implements OnInit {
             firstUnpaid.avance = firstUnpaid.montant;
             this.onAvanceChange(firstUnpaid);
             this.saveDataToStorage();
-            alert(`Paiement rapide de ${this.formatMontant(firstUnpaid.montant)} enregistré pour le mois de ${firstUnpaid.mois} pour ${membre.prenom} ${membre.nom}.`);
         } else {
-            alert(`Ce membre est déjà en règle.`);
+            // Remplacer l'alerte par un message console ou un toast si disponible
+            console.log("Ce membre est déjà en règle.");
         }
     }
 
@@ -438,11 +471,165 @@ export class CotisationCampaignSuiviComponent implements OnInit {
         return word.trim();
     }
 
+    // --- Génération de la Fiche de Synthèse PDF ---
+    generatePDF() {
+        const doc = new jsPDF('landscape');
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('fr-FR');
+        
+        // 1. Titre Principal
+        doc.setFontSize(18);
+        doc.setTextColor(7, 90, 38); // Vert Natangué
+        doc.text('COTISATIONS NATANGUÉ 2025/2026', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Fiche de Synthèse - Générée le ${dateStr}`, doc.internal.pageSize.getWidth() / 2, 22, { align: 'center' });
+
+        let currentY = 30;
+        let totalGeneral = 0;
+
+        // Catégories à traiter dans l'ordre souhaité
+        const targetCats = [10000, 5000, 3000, 2000, 1000];
+        
+        targetCats.forEach(catMontant => {
+            const membresCat = this.getMembresByCategorie(catMontant);
+            if (membresCat.length === 0) return;
+
+            // Titre de la catégorie
+            doc.setFontSize(12);
+            doc.setTextColor(0);
+            doc.text(`CATÉGORIE : ${this.formatMontant(catMontant)}`, 14, currentY);
+            currentY += 5;
+
+            // Préparation des données du tableau
+            const tableRows: any[] = [];
+            let catTotal = 0;
+
+            membresCat.forEach(m => {
+                const row = [
+                    `${m.prenom} ${m.nom}`,
+                    this.formatMontant(catMontant)
+                ];
+
+                // Pour chaque mois, on vérifie si payé
+                this.availableMonths.forEach(mois => {
+                    const p = (m.paiementsMensuels || []).find(pm => pm.mois === mois);
+                    const isPaid = p && (p.avance || 0) >= (p.montant || catMontant);
+                    row.push(isPaid ? 'OK' : 'X'); // On utilisera des icônes ou du texte si nécessaire
+                    if (p && p.avance) catTotal += p.avance;
+                });
+
+                tableRows.push(row);
+            });
+
+            totalGeneral += catTotal;
+
+            // Génération du tableau avec autoTable
+            autoTable(doc, {
+                startY: currentY,
+                head: [['Prénoms & Noms', 'Montant', ...this.availableMonths]],
+                body: tableRows,
+                theme: 'grid',
+                headStyles: { fillColor: [7, 90, 38], textColor: 255, halign: 'center' },
+                columnStyles: {
+                    0: { cellWidth: 50 },
+                    1: { cellWidth: 25, halign: 'center' }
+                },
+                styles: { fontSize: 8, cellPadding: 2, halign: 'center' },
+                didParseCell: (data) => {
+                    if (data.section === 'body' && data.column.index >= 2) {
+                        if (data.cell.raw === 'OK') {
+                            data.cell.text = ['V']; // On peut pas mettre de SVG facilement, on met un V vert
+                            data.cell.styles.textColor = [16, 185, 129];
+                            data.cell.styles.fontStyle = 'bold';
+                        } else if (data.cell.raw === 'X') {
+                            data.cell.styles.textColor = [220, 53, 69];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+                }
+            });
+
+            currentY = (doc as any).lastAutoTable.finalY + 10;
+            
+            // Sous-total catégorie
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`SOUS-TOTAL ENCAISSÉ : ${this.formatMontant(catTotal)}`, 200, currentY, { align: 'right' });
+            currentY += 15;
+
+            // Saut de page si nécessaire
+            if (currentY > doc.internal.pageSize.getHeight() - 40) {
+                doc.addPage();
+                currentY = 20;
+            }
+        });
+
+        // 4. Footer avec Total Général et Signatures
+        if (currentY > doc.internal.pageSize.getHeight() - 60) {
+            doc.addPage();
+            currentY = 20;
+        }
+
+        doc.setDrawColor(7, 90, 38);
+        doc.setLineWidth(0.5);
+        doc.line(14, currentY, doc.internal.pageSize.getWidth() - 14, currentY);
+        currentY += 10;
+
+        doc.setFontSize(14);
+        doc.text(`TOTAL GÉNÉRAL ENCAISSÉ : ${this.formatMontant(totalGeneral)}`, 14, currentY);
+        currentY += 8;
+        
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'italic');
+        doc.text(`Arrêté la présente somme à : ${this.numberToLetters(totalGeneral)} francs CFA`, 14, currentY);
+        
+        currentY += 20;
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Fait à Dakar, le ${dateStr}`, doc.internal.pageSize.getWidth() - 60, currentY, { align: 'center' });
+        doc.text('Signature & Cachet', doc.internal.pageSize.getWidth() - 60, currentY + 10, { align: 'center' });
+
+        // Sauvegarde
+        doc.save('Fiche_Synthese_Natangue.pdf');
+    }
+
     onSaveDetail() {
-        // Sauvegarde des modifications dans le localStorage
-        this.saveDataToStorage();
-        console.log('--- Saving Detail & Cotisation ---', this.selectedMembre);
-        alert(`Suivi enregistré pour ${this.selectedMembre?.prenom} ${this.selectedMembre?.nom}`);
-        this.closeDetailModal();
+        console.log('Tentative d\'enregistrement...');
+        if (!this.selectedMembre) {
+            console.error('Aucun membre sélectionné');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Confirmer ?',
+            text: `Voulez-vous enregistrer les modifications pour ${this.selectedMembre?.prenom} ${this.selectedMembre?.nom} ?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#1b5e20',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Oui, enregistrer',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            console.log('Résultat Swal:', result);
+            if (result.isConfirmed) {
+                try {
+                    this.saveDataToStorage();
+                    this.closeDetailModal(); // On ferme d'abord la modal
+                    
+                    Swal.fire({
+                        title: 'Enregistré !',
+                        text: 'Le suivi a été mis à jour.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false,
+                        target: 'body' // S'assurer qu'il est sur le corps de la page
+                    });
+                } catch (error) {
+                    console.error('Erreur lors de la sauvegarde:', error);
+                    alert('Erreur lors de la sauvegarde locale.');
+                }
+            }
+        });
     }
 }
