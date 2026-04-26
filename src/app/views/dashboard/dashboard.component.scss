@@ -1,4 +1,138 @@
 // Dashboard SCSS
+.dashboard-container {
+    padding: 1rem;
+    background: #f8faf9;
+    min-height: calc(100vh - 64px);
+}
+
+.dashboard-header-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    
+    .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            
+            .icon-box {
+                background: rgba(0, 77, 26, 0.1);
+                padding: 12px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            h4 {
+                margin: 0;
+                color: #1a202c;
+                font-weight: 800;
+                font-size: 1.25rem;
+            }
+            
+            .subtitle {
+                margin: 0;
+                color: #718096;
+                font-size: 0.9rem;
+            }
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            
+            .year-selector {
+                display: flex;
+                flex-direction: column;
+                
+                label {
+                    font-size: 0.75rem;
+                    color: #718096;
+                    font-weight: 700;
+                    margin-bottom: 2px;
+                }
+                
+                .form-select-sm {
+                    border: 1px solid #e2e8f0;
+                    border-radius: 4px;
+                    padding: 4px 8px;
+                    font-weight: 600;
+                    color: #2d3748;
+                    outline: none;
+                }
+            }
+            
+            .btn-exporter {
+                background: #004d1a;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 0.75rem 1.25rem;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+                
+                &:hover {
+                    background: #003a13;
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 10px rgba(0, 77, 26, 0.2);
+                }
+            }
+        }
+    }
+    
+    .dashboard-nav-tabs {
+        display: flex;
+        background: #004d1a;
+        padding: 0 1.5rem;
+        
+        .nav-tab {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 1.25rem 1.5rem;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            
+            &:hover {
+                color: white;
+                background: rgba(255, 255, 255, 0.1);
+            }
+            
+            &.active {
+                color: white;
+                background: rgba(255, 255, 255, 0.15);
+                
+                &::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 10%;
+                    width: 80%;
+                    height: 4px;
+                    background: #f59e0b; // Orange yellow
+                    border-radius: 4px 4px 0 0;
+                }
+            }
+        }
+    }
+}
+
 
 .stats-grid {
     display: grid;

@@ -19,9 +19,10 @@ export interface Campagne {
 export interface PaiementMensuel {
     mois: string;
     montant: number;
-    statut: 'Payé' | 'En cours' | 'En retard';
+    statut: string; // 'Payé' | 'En cours' | 'En retard' | 'Partiel' | 'Avance'
     avance: number;
     reste: number;
+    observation?: string;
 }
 
 export interface MembreCotisation {

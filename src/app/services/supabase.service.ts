@@ -17,6 +17,35 @@ export class SupabaseService {
         return this.supabase;
     }
 
+    async signIn(email: string, password: string) {
+        const { data, error } = await this.supabase.auth.signInWithPassword({
+            email,
+            password
+        });
+        if (error) throw error;
+        return data;
+    }
+
+    async signUp(email: string, password: string) {
+        const { data, error } = await this.supabase.auth.signUp({
+            email,
+            password
+        });
+        if (error) throw error;
+        return data;
+    }
+
+    async signOut() {
+        const { error } = await this.supabase.auth.signOut();
+        if (error) throw error;
+    }
+
+    async getSession() {
+        const { data, error } = await this.supabase.auth.getSession();
+        if (error) throw error;
+        return data.session;
+    }
+
     async getMembers() {
         const { data, error } = await this.supabase
             .from('members')
@@ -41,6 +70,17 @@ export class SupabaseService {
         const { data, error } = await this.supabase
             .from('members')
             .insert([member])
+            .select();
+
+        if (error) throw error;
+        return data[0];
+    }
+
+    async updateMember(id: number, member: any) {
+        const { data, error } = await this.supabase
+            .from('members')
+            .update(member)
+            .eq('id', id)
             .select();
 
         if (error) throw error;

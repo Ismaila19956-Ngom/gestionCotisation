@@ -101,7 +101,11 @@ export class MemberListComponent implements OnInit {
 
     onSaveMember(memberData: Partial<Member>) {
         console.log('Saving member data:', memberData);
-        // Backend logic would go here
+        if (this.memberToEdit()) {
+            this.memberService.updateMember({ ...this.memberToEdit()!, ...memberData } as Member);
+        } else {
+            this.memberService.addMember(memberData as Omit<Member, 'id'>);
+        }
         this.closeModals();
     }
 

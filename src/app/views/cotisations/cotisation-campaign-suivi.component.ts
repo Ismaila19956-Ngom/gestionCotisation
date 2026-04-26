@@ -27,12 +27,7 @@ export class CotisationCampaignSuiviComponent implements OnInit {
     activeTab: number = 1000; // Par défaut, onglet 1000 FCFA
     showImportModal: boolean = false;
 
-    membres: MembreCotisation[] = [
-        { id: 1, campagneId: 1, categorieId: 1, memberId: 101, prenom: 'Aissatou', nom: 'Sow', sexe: 'F', dateNaissance: '12/05/1995', isPaid: true, datePaiement: '2026-04-10', unpaidMonthsCount: 0 },
-        { id: 2, campagneId: 1, categorieId: 1, memberId: 102, prenom: 'Modou', nom: 'Diop', sexe: 'H', dateNaissance: '22/08/1990', isPaid: false, unpaidMonthsCount: 1 },
-        { id: 3, campagneId: 1, categorieId: 4, memberId: 103, prenom: 'Mamadou', nom: 'Ndiaye', sexe: 'H', dateNaissance: '05/03/1988', isPaid: true, datePaiement: '2026-04-12', unpaidMonthsCount: 0 },
-        { id: 4, campagneId: 1, categorieId: 5, memberId: 104, prenom: 'Ibrahima', nom: 'Fall', sexe: 'H', dateNaissance: '30/09/1992', isPaid: false, unpaidMonthsCount: 13 }
-    ];
+    membres: MembreCotisation[] = [];
 
     // Modal Détails & Cotisation
     showDetailModal: boolean = false;
@@ -46,44 +41,65 @@ export class CotisationCampaignSuiviComponent implements OnInit {
     ngOnInit() {
         this.route.paramMap.subscribe(params => {
             this.campagneId = Number(params.get('id'));
-            this.initMockDataGlobale();
+            
+            // Charger les infos de la campagne pour obtenir les mois dynamiques
+            const campagnesStr = localStorage.getItem('natangue_campagnes');
+            if (campagnesStr) {
+                const campagnes = JSON.parse(campagnesStr);
+                const currentCampagne = campagnes.find((c: any) => c.id === this.campagneId);
+                if (currentCampagne) {
+                    this.availableMonths = this.genererListeMois(currentCampagne.moisDebut, currentCampagne.moisFin);
+                } else {
+                    this.availableMonths = this.generateMonths(7, 10); // par défaut
+                }
+            } else {
+                this.availableMonths = this.generateMonths(7, 10);
+            }
+            
+            // On essaie de charger les membres depuis le localStorage
+            const hasData = this.loadDataFromStorage();
+            if (!hasData) {
+                this.membres = [];
+                this.saveDataToStorage();
+            }
         });
     }
 
-    // --- Génération globale des données mockées ---
-    initMockDataGlobale() {
-        // Configuration de la campagne (Juillet à Octobre)
-        this.availableMonths = this.generateMonths(7, 10);
+    // --- Gestion du LocalStorage ---
+    get storageKey(): string {
+        return `natangue_campagne_${this.campagneId}_membres_v2`;
+    }
 
-        this.membres.forEach(membre => {
-            const cat = this.categories.find(c => c.id === membre.categorieId);
-            const montantInitial = cat ? cat.montant : 0;
+    loadDataFromStorage(): boolean {
+        const data = localStorage.getItem(this.storageKey);
+        if (data) {
+            try {
+                this.membres = JSON.parse(data);
+                return true;
+            } catch (e) {
+                console.error('Erreur lors du chargement des données depuis le localStorage', e);
+                return false;
+            }
+        }
+        return false;
+    }
 
-            membre.paiementsMensuels = this.availableMonths.map(mois => {
-                let avanceMock = montantInitial; // Payé par défaut pour la plupart
+    saveDataToStorage() {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.membres));
+    }
 
-                // Scénario : Modou Diop (ID: 102) a exactement 2 mois de retard (Aout et Septembre non payés)
-                if (membre.memberId === 102) {
-                    const moisIdx = this.getMoisIndex(mois);
-                    if (moisIdx === 8 || moisIdx === 9) avanceMock = 0;
-                }
-
-                // Scénario : Ibrahima Fall (ID: 104) n'a rien payé du tout (Retard total)
-                if (membre.memberId === 104) {
-                    avanceMock = 0;
-                }
-
-                return {
-                    mois: mois,
-                    montant: montantInitial,
-                    statut: this.calculateStatutMensuel(mois, avanceMock, montantInitial),
-                    avance: avanceMock,
-                    reste: Math.max(0, montantInitial - avanceMock)
-                };
-            });
-
-            this.recalculerNombreMoisEnRetard(membre);
+    // --- Initialisation des paiements pour un nouveau membre ---
+    initPaiementsMensuels(membre: MembreCotisation, montantInitial: number) {
+        membre.paiementsMensuels = this.availableMonths.map(mois => {
+            return {
+                mois: mois,
+                montant: montantInitial,
+                statut: this.calculateStatutMensuel(mois, 0, montantInitial),
+                avance: 0,
+                reste: montantInitial
+            };
         });
+        this.recalculerNombreMoisEnRetard(membre);
     }
 
 
@@ -94,7 +110,7 @@ export class CotisationCampaignSuiviComponent implements OnInit {
     getMembresByCategorie(montant: number) {
         const cat = this.categories.find(c => c.montant === montant);
         if (!cat) return [];
-        return this.membres.filter(m => m.categorieId === cat.id);
+        return this.membres.filter((m: any) => m.categorieId === cat.id || m.categorie === montant);
     }
 
     // Calcule le montant total encaissé (payé) pour une catégorie donnée
@@ -111,6 +127,13 @@ export class CotisationCampaignSuiviComponent implements OnInit {
         return (membre.paiementsMensuels || []).reduce((sum, p) => sum + (p.avance || 0), 0);
     }
 
+    // Calcule le total général sur toute la campagne
+    getTotalGeneral(): number {
+        return this.categories.reduce((total, cat) => {
+            return total + this.getTotalPayeByCategorie(cat.montant);
+        }, 0);
+    }
+
     openImportModal() {
         this.showImportModal = true;
     }
@@ -125,7 +148,7 @@ export class CotisationCampaignSuiviComponent implements OnInit {
 
         selectedMembers.forEach(m => {
             const newId = this.membres.length + 1;
-            this.membres.push({
+            const newMembre: MembreCotisation = {
                 id: newId,
                 campagneId: this.campagneId,
                 categorieId: activeCat.id,
@@ -135,10 +158,13 @@ export class CotisationCampaignSuiviComponent implements OnInit {
                 sexe: m.sexe,
                 dateNaissance: m.dateNaissance || '01/01/2000',
                 isPaid: false
-            });
+            };
+            this.initPaiementsMensuels(newMembre, activeCat.montant);
+            this.membres.push(newMembre);
         });
 
         this.showImportModal = false;
+        this.saveDataToStorage();
         alert(`${selectedMembers.length} membre(s) importé(s) avec succès dans la catégorie ${this.activeTab} FCFA !`);
     }
 
@@ -147,7 +173,7 @@ export class CotisationCampaignSuiviComponent implements OnInit {
         const activeCat = this.categories.find(c => c.montant === this.activeTab);
         if (activeCat) {
             const newId = this.membres.length + 1;
-            this.membres.push({
+            const newMembre: MembreCotisation = {
                 id: newId,
                 campagneId: this.campagneId,
                 categorieId: activeCat.id,
@@ -156,9 +182,11 @@ export class CotisationCampaignSuiviComponent implements OnInit {
                 nom: `Manuel ${newId}`,
                 sexe: 'H',
                 dateNaissance: '01/01/2000',
-                isPaid: true,
-                datePaiement: new Date().toISOString().split('T')[0]
-            });
+                isPaid: false
+            };
+            this.initPaiementsMensuels(newMembre, activeCat.montant);
+            this.membres.push(newMembre);
+            this.saveDataToStorage();
             alert(`Cotisation de ${this.activeTab} FCFA enregistrée !`);
         }
     }
@@ -166,6 +194,7 @@ export class CotisationCampaignSuiviComponent implements OnInit {
     addCotisation(membre: MembreCotisation) {
         membre.isPaid = true;
         membre.datePaiement = new Date().toISOString().split('T')[0];
+        this.saveDataToStorage();
     }
 
     goBack() {
@@ -182,6 +211,24 @@ export class CotisationCampaignSuiviComponent implements OnInit {
         return list;
     }
 
+    /**
+     * Génère dynamiquement la liste des mois entre moisDebut et moisFin.
+     * Gère le chevauchement d'année (ex: Octobre à Février)
+     */
+    genererListeMois(debut: number, fin: number): string[] {
+        let mois: string[] = [];
+        let current = debut;
+
+        while (true) {
+            mois.push(this.monthNames[current - 1]);
+            if (current === fin) break;
+            
+            current++;
+            if (current > 12) current = 1; // On repart à Janvier
+        }
+        return mois;
+    }
+
     // ─── RÈGLE MÉTIER DU 10 DU MOIS ─────────────────────────────────────────────
     // Retourne l'index du mois (1-12) à partir du nom
     getMoisIndex(nomMois: string): number {
@@ -196,14 +243,18 @@ export class CotisationCampaignSuiviComponent implements OnInit {
 
     /**
      * Calcule le statut d'un mois selon la règle métier :
-     * - Mois futur       → "En cours"
-     * - Mois passé, non payé → "En retard"
+     * - Avance > 0 et < montant  → "Partiel"
+     * - Avance == montant        → "Payé"
+     * - Avance > montant         → "Avance"
+     * - Mois futur               → "En cours"
+     * - Mois passé, non payé     → "En retard"
      * - Mois courant avant le 10 → "En cours"
-     * - Mois courant après le 10, non payé → "En retard"
-     * - Avance >= montant → "Payé"
+     * - Mois courant après le 10 → "En retard"
      */
-    calculateStatutMensuel(nomMois: string, avance: number, montant: number): 'Payé' | 'En cours' | 'En retard' {
-        if (avance >= montant) return 'Payé';
+    calculateStatutMensuel(nomMois: string, avance: number, montant: number): string {
+        if (avance > 0 && avance < montant) return 'Partiel';
+        if (avance === montant) return 'Payé';
+        if (avance > montant) return 'Avance';
 
         const now = new Date();
         const currentMonth = now.getMonth() + 1; // 1-12
@@ -236,17 +287,13 @@ export class CotisationCampaignSuiviComponent implements OnInit {
 
     onAvanceChange(paiement: any) {
         paiement.reste = Math.max(0, (paiement.montant || 0) - (paiement.avance || 0));
-        if (paiement.reste <= 0) {
-            paiement.statut = 'Payé';
-            paiement.reste = 0;
-        } else {
-            // Recalcul dynamique selon la règle du 10
-            paiement.statut = this.calculateStatutMensuel(
-                paiement.mois,
-                paiement.avance,
-                paiement.montant
-            );
-        }
+        
+        // Recalcul dynamique des statuts
+        paiement.statut = this.calculateStatutMensuel(
+            paiement.mois,
+            paiement.avance || 0,
+            paiement.montant || 0
+        );
         // Mettre à jour le badge dans le tableau principal
         if (this.selectedMembre) {
             this.recalculerNombreMoisEnRetard(this.selectedMembre);
@@ -263,8 +310,137 @@ export class CotisationCampaignSuiviComponent implements OnInit {
         return amount.toLocaleString() + ' F CFA';
     }
 
+    // --- Fast Payment ---
+    fastPayment(membre: MembreCotisation) {
+        if (!membre.paiementsMensuels) return;
+        const firstUnpaid = membre.paiementsMensuels.find(p => p.statut !== 'Payé' && p.statut !== 'Avance');
+        
+        if (firstUnpaid) {
+            firstUnpaid.avance = firstUnpaid.montant;
+            this.onAvanceChange(firstUnpaid);
+            this.saveDataToStorage();
+            alert(`Paiement rapide de ${this.formatMontant(firstUnpaid.montant)} enregistré pour le mois de ${firstUnpaid.mois} pour ${membre.prenom} ${membre.nom}.`);
+        } else {
+            alert(`Ce membre est déjà en règle.`);
+        }
+    }
+
+    // --- Génération Rapport WhatsApp ---
+    generateWhatsappReport() {
+        let report = `*COTISATIONS - Campagne #${this.campagneId} - ${new Date().getFullYear()}*\n\n`;
+        
+        const now = new Date();
+        const currentMonthName = this.monthNames[now.getMonth()] || this.monthNames[now.getMonth() - 1] || 'Mois';
+        
+        this.categories.forEach(cat => {
+            const membresCat = this.getMembresByCategorie(cat.montant);
+            let catReport = `*Catégorie ${this.formatMontant(cat.montant)}*\n`;
+            let catTotalMoisEnCours = 0;
+            let hasPaiement = false;
+            
+            membresCat.forEach(membre => {
+                if (membre.paiementsMensuels) {
+                    const paiementMoisEnCours = membre.paiementsMensuels.find(p => p.mois === currentMonthName || p.mois === this.monthNames[0]);
+                    
+                    // Si on ne trouve pas le mois en cours exact, prenons le mois le plus récent où il a payé
+                    const targetPaiement = paiementMoisEnCours || membre.paiementsMensuels[0];
+                    
+                    if (targetPaiement && (targetPaiement.avance || 0) > 0) {
+                        catReport += `- ${membre.prenom} ${membre.nom} : ${this.formatMontant(targetPaiement.avance)}\n`;
+                        catTotalMoisEnCours += targetPaiement.avance;
+                        hasPaiement = true;
+                    }
+                }
+            });
+            
+            if (hasPaiement) {
+                catReport += `*Sous-total : ${this.formatMontant(catTotalMoisEnCours)}*\n\n`;
+                report += catReport;
+            }
+        });
+        
+        const totalGeneral = this.getTotalGeneral();
+        report += `*TOTAL GÉNÉRAL ENCAISSÉ : ${this.formatMontant(totalGeneral)}*\n`;
+        report += `_(${this.numberToLetters(totalGeneral)} francs CFA)_\n`;
+        
+        navigator.clipboard.writeText(report).then(() => {
+            alert("Le rapport WhatsApp a été copié dans le presse-papier !");
+        }).catch(err => {
+            console.error('Erreur lors de la copie du rapport', err);
+            alert("Erreur lors de la copie du rapport. Consultez la console.");
+        });
+    }
+
+    numberToLetters(num: number): string {
+        return this.convertNumberToWordsFr(num);
+    }
+    
+    convertNumberToWordsFr(value: number): string {
+        const units = ["", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze", "douze", "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf"];
+        const tens = ["", "dix", "vingt", "trente", "quarante", "cinquante", "soixante", "soixante-dix", "quatre-vingts", "quatre-vingt-dix"];
+        
+        if (value === 0) return "zéro";
+        
+        let word = "";
+        
+        if (Math.floor(value / 1000000) > 0) {
+            word += this.convertNumberToWordsFr(Math.floor(value / 1000000)) + " million ";
+            value %= 1000000;
+        }
+        
+        if (Math.floor(value / 1000) > 0) {
+            if (Math.floor(value / 1000) === 1) {
+                word += "mille ";
+            } else {
+                word += this.convertNumberToWordsFr(Math.floor(value / 1000)) + " mille ";
+            }
+            value %= 1000;
+        }
+        
+        if (Math.floor(value / 100) > 0) {
+            if (Math.floor(value / 100) === 1) {
+                word += "cent ";
+            } else {
+                word += units[Math.floor(value / 100)] + " cent ";
+            }
+            value %= 100;
+        }
+        
+        if (value > 0) {
+            if (value < 20) {
+                word += units[value];
+            } else {
+                let ten = Math.floor(value / 10);
+                let unit = value % 10;
+                
+                if (ten === 7 || ten === 9) {
+                    ten--;
+                    unit += 10;
+                }
+                
+                word += tens[ten];
+                if (unit > 0) {
+                    if (unit === 1 && ten !== 8) {
+                        word += " et un";
+                    } else if (unit >= 10 && unit <= 19) {
+                         if (ten === 6 && unit === 11) {
+                             word += " et onze";
+                         } else {
+                             word += "-" + units[unit];
+                         }
+                    } else {
+                        word += "-" + units[unit];
+                    }
+                }
+            }
+        }
+        
+        return word.trim();
+    }
+
     onSaveDetail() {
-        // Ici on sauvegarderait les modifications via le service
+        // Sauvegarde des modifications dans le localStorage
+        this.saveDataToStorage();
         console.log('--- Saving Detail & Cotisation ---', this.selectedMembre);
         alert(`Suivi enregistré pour ${this.selectedMembre?.prenom} ${this.selectedMembre?.nom}`);
         this.closeDetailModal();

@@ -2,6 +2,7 @@ import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
     selector: 'app-login',
@@ -13,15 +14,18 @@ import { Router } from '@angular/router';
 export class LoginComponent {
     private fb = inject(FormBuilder);
     private router = inject(Router);
+    private supabase = inject(SupabaseService);
 
     // View state: Welcome vs Form
     showForm = signal(false);
 
     // Password visibility
     showPassword = signal(false);
+    isLoading = signal(false);
+    errorMessage = signal('');
 
     loginForm = this.fb.group({
-        username: ['', [Validators.required]],
+        email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(4)]]
     });
 
@@ -33,15 +37,19 @@ export class LoginComponent {
         this.showPassword.set(!this.showPassword());
     }
 
-    onSubmit() {
+    async onSubmit() {
         if (this.loginForm.valid) {
-            const { username, password } = this.loginForm.value;
+            this.isLoading.set(true);
+            this.errorMessage.set('');
+            const { email, password } = this.loginForm.value;
 
-            // Hardcoded check pour l'utilisateur demandé
-            if (username === 'admin' && password === 'pass') {
+            try {
+                await this.supabase.signIn(email as string, password as string);
                 this.router.navigate(['/membres']);
-            } else {
-                alert('Identifiants incorrects. Essayez: admin / pass');
+            } catch (err: any) {
+                this.errorMessage.set(err.message || 'Identifiants incorrects.');
+            } finally {
+                this.isLoading.set(false);
             }
         } else {
             this.loginForm.markAllAsTouched();
