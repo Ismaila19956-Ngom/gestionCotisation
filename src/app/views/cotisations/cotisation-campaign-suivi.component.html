@@ -2,10 +2,12 @@
     <div class="header-actions">
         <div>
             <h2 style="margin: 0; color: #1b5e20;">Suivi de Campagne #{{ campagneId }}</h2>
+            <div style="font-size: 1.25rem; font-weight: 700; color: #1b5e20; margin-top: 0.25rem;">Total Général : {{ formatMontant(getTotalGeneral()) }}</div>
             <p style="margin: 0.5rem 0 0 0; color: #555;">Détails des cotisations réparties par catégorie de montant.
             </p>
         </div>
         <div class="action-buttons">
+
             <button class="btn btn-primary" (click)="addCotisationGlobal()"
                 style="background-color: #2e7d32; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
                 + Ajouter Cotisation
@@ -47,10 +49,8 @@
             <table class="antigravity-table">
                 <thead>
                     <tr>
-                        <th>#</th>
                         <th>Prénom</th>
                         <th>Nom</th>
-                        <th>Sexe</th>
                         <th>Catégorie</th>
                         <th>État</th>
                         <th>Montant Encaissé</th>
@@ -59,14 +59,8 @@
                 </thead>
                 <tbody>
                     <tr *ngFor="let membre of getMembresByCategorie(cat.montant); let i = index">
-                        <td>{{ i + 1 }}</td>
                         <td class="primary-text">{{ membre.prenom }}</td>
                         <td class="primary-text">{{ membre.nom }}</td>
-                        <td>
-                            <span class="gender-badge" [ngClass]="membre.sexe === 'H' ? 'gender-m' : 'gender-f'">
-                                {{ membre.sexe === 'H' ? '♂ Homme' : '♀ Femme' }}
-                            </span>
-                        </td>
                         <td>
                             <span class="category-pill">{{ formatMontant(cat.montant) }}</span>
                         </td>
@@ -131,6 +125,7 @@
                             <th>Statut</th>
                             <th>Avance</th>
                             <th>Reste</th>
+
                         </tr>
                     </thead>
                     <tbody>
@@ -145,18 +140,28 @@
                                 <span class="statut-badge" [ngClass]="{
                                         'statut-paye': p.statut === 'Payé',
                                         'statut-encours': p.statut === 'En cours',
-                                        'statut-retard': p.statut === 'En retard'
+                                        'statut-retard': p.statut === 'En retard',
+                                        'statut-partiel': p.statut === 'Partiel',
+                                        'statut-avance': p.statut === 'Avance'
                                     }">
                                     {{ p.statut }}
                                 </span>
                             </td>
                             <td>
-                                <input type="number" [(ngModel)]="p.avance" (ngModelChange)="onAvanceChange(p)"
-                                    class="form-input-sm" style="width: 100px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="number" [(ngModel)]="p.avance" (ngModelChange)="onAvanceChange(p)"
+                                        class="form-input-sm" style="width: 100px;"
+                                        [readonly]="p.statut === 'Payé'"
+                                        [ngStyle]="{'background-color': p.statut === 'Payé' ? '#f3f4f6' : 'white', 'color': p.statut === 'Payé' ? '#9ca3af' : 'inherit'}">
+                                    <svg *ngIf="p.statut === 'Payé'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                </div>
                             </td>
                             <td class="fw-bold" [ngClass]="p.reste > 0 ? 'text-danger' : 'text-success'">
                                 {{ formatMontant(p.reste) }}
                             </td>
+
                         </tr>
                     </tbody>
                 </table>

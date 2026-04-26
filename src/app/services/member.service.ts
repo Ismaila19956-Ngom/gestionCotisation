@@ -48,8 +48,13 @@ export class MemberService {
         const cotisationsData = await this.supabase.getCotisations();
 
         const transformedMembers = membersData.map((m: any) => ({
-            ...m,
-            // Match our local model if needed
+            id: m.id,
+            prenom: m.prenom,
+            nom: m.nom,
+            sexe: m.sexe,
+            categorie: m.categorie,
+            dateNaissance: m.date_naissance || m.dateNaissance,
+            dateAdhesion: m.date_adhesion || m.dateAdhesion
         })) as Member[];
 
         const transformedCotis = cotisationsData.map((c: any) => ({
@@ -111,6 +116,44 @@ export class MemberService {
 
     getAllCotisations() {
         return this.cotisations.asReadonly();
+    }
+
+    async addMember(m: Omit<Member, 'id'>) {
+        const nextId = Math.max(0, ...this.members().map(p => p.id)) + 1;
+        try {
+            await this.supabase.addMember({
+                prenom: m.prenom,
+                nom: m.nom,
+                date_naissance: m.dateNaissance,
+                sexe: m.sexe,
+                categorie: m.categorie,
+                date_adhesion: m.dateAdhesion
+            });
+        } catch (err) {
+            console.error('Failed to save to Supabase:', err);
+            // Fallback to local
+            const newMember: Member = { ...m, id: nextId } as Member;
+            this.members.update(prev => [...prev, newMember]);
+            this.saveToLocal();
+        }
+    }
+
+    async updateMember(m: Member) {
+        try {
+            await this.supabase.updateMember(m.id, {
+                prenom: m.prenom,
+                nom: m.nom,
+                date_naissance: m.dateNaissance,
+                sexe: m.sexe,
+                categorie: m.categorie,
+                date_adhesion: m.dateAdhesion
+            });
+        } catch (err) {
+            console.error('Failed to update Supabase:', err);
+            // Fallback to local
+            this.members.update(prev => prev.map(member => member.id === m.id ? m : member));
+            this.saveToLocal();
+        }
     }
 
     async addContribution(c: Omit<Cotisation, 'id' | 'status' | 'reference'>) {

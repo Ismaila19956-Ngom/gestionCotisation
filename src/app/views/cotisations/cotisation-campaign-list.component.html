@@ -34,9 +34,12 @@
                         <span class="status-badge status-active" *ngIf="camp.statut === 'EN_COURS'">En cours</span>
                         <span class="status-badge" *ngIf="camp.statut !== 'EN_COURS'">{{ camp.statut }}</span>
                     </td>
-                    <td class="actions">
+                    <td class="actions" style="display: flex; gap: 8px;">
                         <button class="btn btn-icon btn-view" (click)="goToSuivi(camp.id)" title="Suivi de la campagne">
                             👁️ Suivi
+                        </button>
+                        <button class="btn btn-icon" (click)="deleteCampagne(camp.id)" title="Supprimer la campagne" style="background-color: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                            🗑️ Supprimer
                         </button>
                     </td>
                 </tr>
@@ -63,32 +66,14 @@
                     <option *ngFor="let a of annees" [value]="a">{{ a }}</option>
                 </select>
             </div>
-            <div class="form-row">
-                <div class="form-group half">
-                    <label>Mois de début</label>
-                    <select [(ngModel)]="nouvelleCampagne.moisDebut" name="moisDebut" class="form-control">
-                        <option *ngFor="let m of moisList" [value]="m.value">{{ m.label }}</option>
-                    </select>
-                </div>
-                <div class="form-group half">
-                    <label>Date début cotisations</label>
-                    <input type="date" [(ngModel)]="nouvelleCampagne.dateDebutCotisation" name="dateDebutCotisation"
-                        class="form-control">
-                </div>
+            <div class="form-group">
+                <label>Date début cotisations</label>
+                <input type="date" [(ngModel)]="nouvelleCampagne.dateDebutCotisation" name="dateDebutCotisation" class="form-control">
             </div>
 
-            <div class="form-row">
-                <div class="form-group half">
-                    <label>Mois de fin</label>
-                    <select [(ngModel)]="nouvelleCampagne.moisFin" name="moisFin" class="form-control">
-                        <option *ngFor="let m of moisList" [value]="m.value">{{ m.label }}</option>
-                    </select>
-                </div>
-                <div class="form-group half">
-                    <label>Date fin cotisations</label>
-                    <input type="date" [(ngModel)]="nouvelleCampagne.dateFinCotisation" name="dateFinCotisation"
-                        class="form-control">
-                </div>
+            <div class="form-group">
+                <label>Date fin cotisations</label>
+                <input type="date" [(ngModel)]="nouvelleCampagne.dateFinCotisation" name="dateFinCotisation" class="form-control">
             </div>
         </div>
         <div class="modal-footer">
