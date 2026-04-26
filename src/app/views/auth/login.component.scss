@@ -7,6 +7,32 @@
     position: relative;
     justify-content: center;
     align-items: center;
+
+    .back-home-link {
+        position: absolute;
+        top: 2rem;
+        left: 2rem;
+        z-index: 100;
+        
+        a {
+            color: #1b5e20;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 50rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+
+            &:hover {
+                transform: translateX(-5px);
+                background: #1b5e20;
+                color: white;
+            }
+        }
+    }
 }
 
 .auth-wrapper {

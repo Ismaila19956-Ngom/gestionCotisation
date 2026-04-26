@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Categorie, MembreCotisation } from '../../models/cotisation-campaign.model';
 import { CotisationMemberImportModalComponent } from './cotisation-member-import-modal.component';
 
 @Component({
     selector: 'app-cotisation-campaign-suivi',
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, CotisationMemberImportModalComponent],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, CotisationMemberImportModalComponent, RouterLink],
     templateUrl: './cotisation-campaign-suivi.component.html',
     styleUrls: ['./cotisation-campaign-suivi.component.scss']
 })
