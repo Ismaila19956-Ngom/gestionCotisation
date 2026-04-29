@@ -11,8 +11,8 @@ export interface Campagne {
     libelle: string;
     moisDebut: number;
     moisFin: number;
-    dateDebutCotisation?: string;
-    dateFinCotisation?: string;
+    date_debut?: string;
+    date_fin?: string;
     statut: 'EN_COURS' | 'CLOTUREE' | 'A_VENIR';
 }
 
