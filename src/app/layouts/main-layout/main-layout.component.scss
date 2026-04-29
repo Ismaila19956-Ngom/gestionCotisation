@@ -57,3 +57,21 @@
         opacity: 1;
     }
 }
+
+.main-footer {
+    padding: 1.5rem;
+    text-align: center;
+    background: #ffffff;
+    border-top: 1px solid #edf2f7;
+    color: #718096;
+    font-size: 0.875rem;
+
+    p {
+        margin: 0;
+    }
+
+    .fw-bold {
+        color: #1b5e20;
+        font-weight: 700;
+    }
+}

@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { Campagne } from '../../models/cotisation-campaign.model';
-import { membresCampagneData } from '../../models/membres_asc.data';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
+import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
     selector: 'app-cotisation-campaign-list',
@@ -22,8 +22,8 @@ export class CotisationCampaignListComponent implements OnInit {
         libelle: '',
         moisDebut: new Date().getMonth() + 1,
         moisFin: new Date().getMonth() + 1,
-        dateDebutCotisation: '',
-        dateFinCotisation: ''
+        date_debut: '',
+        date_fin: ''
     };
 
     annees: number[] = [];
@@ -52,46 +52,68 @@ export class CotisationCampaignListComponent implements OnInit {
     totalPages = 1;
 
     isModalOpen = false;
+    isEditing = false;
+    activeDropdown: number | null = null;
 
-    constructor(private router: Router) {
+    constructor(private router: Router, private supabase: SupabaseService, private cdr: ChangeDetectorRef) {
         const currentYear = new Date().getFullYear();
         for (let i = currentYear - 2; i <= currentYear + 2; i++) {
             this.annees.push(i);
         }
     }
 
-    ngOnInit() {
-        this.loadCampagnesFromStorage();
+    async ngOnInit() {
+        await this.loadCampagnes();
+        
+        // Si aucune campagne n'existe, on lance la synchro initiale
+        if (this.campagnes.length === 0) {
+            await this.supabase.initialSyncToSupabase();
+            await this.loadCampagnes();
+        }
+
+        // Écouter les changements en temps réel sur les campagnes
+        this.supabase.subscribeToChanges('campagnes', () => this.loadCampagnes());
+        
+        // Fermer le dropdown en cliquant ailleurs
+        document.addEventListener('click', this.closeDropdowns.bind(this));
+    }
+    
+    ngOnDestroy() {
+        document.removeEventListener('click', this.closeDropdowns.bind(this));
     }
 
-    // --- Gestion du LocalStorage pour les campagnes ---
-    get storageKey(): string {
-        return 'natangue_campagnes';
-    }
-
-    loadCampagnesFromStorage() {
-        const data = localStorage.getItem(this.storageKey);
-        if (data) {
-            try {
-                this.campagnes = JSON.parse(data);
-                this.updatePagination();
-            } catch (e) {
-                console.error('Erreur lecture localStorage', e);
-                this.campagnes = [];
+    closeDropdowns(event?: Event) {
+        if (event) {
+            const target = event.target as HTMLElement;
+            if (!target.closest('.dropdown-container')) {
+                this.activeDropdown = null;
             }
+        } else {
+            this.activeDropdown = null;
         }
     }
 
-    saveCampagnesToStorage() {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.campagnes));
-        this.updatePagination();
+    toggleDropdown(id: number, event: Event) {
+        event.stopPropagation();
+        this.activeDropdown = this.activeDropdown === id ? null : id;
+    }
+
+    async loadCampagnes() {
+        try {
+            this.campagnes = await this.supabase.getCampagnes() as Campagne[];
+            this.updatePagination();
+            this.cdr.detectChanges(); // Force UI update after async fetch
+        } catch (e) {
+            console.error('Erreur chargement campagnes Supabase', e);
+            this.campagnes = [];
+            this.cdr.detectChanges();
+        }
     }
 
     updatePagination() {
         this.totalItems = this.campagnes.length;
         this.totalPages = Math.ceil(this.totalItems / this.itemsPerPage) || 1;
         
-        // S'assurer que la page courante est valide
         if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
         if (this.currentPage < 1) this.currentPage = 1;
 
@@ -112,154 +134,94 @@ export class CotisationCampaignListComponent implements OnInit {
     }
 
     openModal() {
+        this.isEditing = false;
         this.isModalOpen = true;
+    }
+
+    editCampagne(campagne: Campagne) {
+        this.isEditing = true;
+        this.nouvelleCampagne = {
+            id: campagne.id,
+            libelle: campagne.libelle,
+            annee: campagne.annee,
+            date_debut: campagne.date_debut,
+            date_fin: campagne.date_fin
+        };
+        this.isModalOpen = true;
+        this.activeDropdown = null;
     }
 
     closeModal() {
         this.isModalOpen = false;
-    }
-
-    async saveCampagne() {
-        if (this.nouvelleCampagne.dateDebutCotisation) {
-            this.nouvelleCampagne.moisDebut = new Date(this.nouvelleCampagne.dateDebutCotisation).getMonth() + 1;
-        }
-        if (this.nouvelleCampagne.dateFinCotisation) {
-            this.nouvelleCampagne.moisFin = new Date(this.nouvelleCampagne.dateFinCotisation).getMonth() + 1;
-        }
-
-        const id = this.campagnes.length > 0 ? Math.max(...this.campagnes.map(c => c.id)) + 1 : 1;
-        
-        const mDebut = this.nouvelleCampagne.moisDebut || 1;
-        const mFin = this.nouvelleCampagne.moisFin || 12;
-        
-        // Générer tous les mois de la période
-        const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-        let tousLesMois: string[] = [];
-        let current = mDebut;
-        while (true) {
-            tousLesMois.push(monthNames[current - 1]);
-            if (current === mFin) break;
-            current++;
-            if (current > 12) current = 1;
-        }
-
-        this.campagnes.push({
-            ...this.nouvelleCampagne,
-            id,
-            statut: 'EN_COURS'
-        } as Campagne);
-        this.saveCampagnesToStorage();
-        this.closeModal();
-
-        // Importer automatiquement les membres du JSON (via notre fichier TypeScript)
-        try {
-            let membresCampagne = JSON.parse(JSON.stringify(membresCampagneData));
-            
-            membresCampagne = membresCampagne.map((m: any) => {
-                const nameParts = m.nom ? m.nom.split(' ') : [''];
-                const nom = nameParts.length > 1 ? nameParts.pop() : m.nom;
-                const prenom = nameParts.length > 0 ? nameParts.join(' ') : '';
-                
-                const jsonPaiements = m.paiements || [];
-                
-                // Fonction locale pour déterminer le statut initial exact
-                const determineStatut = (nomMois: string) => {
-                    const now = new Date();
-                    const currentMonth = now.getMonth() + 1;
-                    const currentDay = now.getDate();
-                    const moisIndex = monthNames.indexOf(nomMois) + 1;
-                    
-                    // Simple check (sans gestion complexe des années croisées pour l'instant)
-                    if (moisIndex > currentMonth) return 'En cours';
-                    if (moisIndex < currentMonth) return 'En retard';
-                    return currentDay >= 10 ? 'En retard' : 'En cours';
-                };
-
-                // Fusionner avec la liste complète de la campagne
-                const paiementsMensuels = tousLesMois.map(nomMois => {
-                    const existing = jsonPaiements.find((p: any) => p.mois === nomMois);
-                    if (existing) {
-                        return existing;
-                    } else {
-                        return {
-                            mois: nomMois,
-                            montant: m.categorie,
-                            statut: determineStatut(nomMois),
-                            avance: 0,
-                            reste: m.categorie,
-                            observation: ''
-                        };
-                    }
-                });
-
-                // Calcul basique pour le tag "En retard" initial
-                const unpaidMonthsCount = paiementsMensuels.filter((p: any) => p.statut === 'En retard' || (p.avance === 0 && p.statut !== 'En cours')).length;
-                delete m.paiements;
-
-                return {
-                    ...m,
-                    prenom: prenom,
-                    nom: nom,
-                    sexe: m.sexe === 'Femme' ? 'F' : 'H',
-                    campagneId: id,
-                    paiementsMensuels: paiementsMensuels,
-                    unpaidMonthsCount: unpaidMonthsCount
-                };
-            });
-            
-            // Sauvegarder dans le localStorage
-            const keyMembres = `natangue_campagne_${id}_membres_v2`;
-            localStorage.setItem(keyMembres, JSON.stringify(membresCampagne));
-            
-            // Calculer un total de la campagne pour le notifier (facultatif)
-            const totalGeneral = membresCampagne.reduce((total: number, m: any) => total + (m.montantTotalEncaisse || 0), 0);
-            
-            Swal.fire({
-                title: 'Succès !',
-                text: `Campagne sauvegardée avec succès ! ${membresCampagne.length} membres importés.`,
-                icon: 'success',
-                confirmButtonColor: '#1b5e20'
-            });
-        } catch (e) {
-            console.error("Erreur lors de l'import des membres", e);
-            Swal.fire('Erreur', "Campagne sauvegardée mais une erreur s'est produite lors de l'import des membres.", 'error');
-        }
-
         this.nouvelleCampagne = {
             annee: new Date().getFullYear(),
             libelle: '',
             moisDebut: new Date().getMonth() + 1,
             moisFin: new Date().getMonth() + 1,
-            dateDebutCotisation: '',
-            dateFinCotisation: ''
+            date_debut: '',
+            date_fin: ''
         };
+        this.isEditing = false;
+    }
+
+    async saveCampagne() {
+        try {
+            const campagneToSave: any = {
+                libelle: this.nouvelleCampagne.libelle,
+                annee: Number(this.nouvelleCampagne.annee),
+                mois_debut: this.nouvelleCampagne.date_debut ? new Date(this.nouvelleCampagne.date_debut).getMonth() + 1 : 10,
+                mois_fin: this.nouvelleCampagne.date_fin ? new Date(this.nouvelleCampagne.date_fin).getMonth() + 1 : 9,
+                date_debut: this.nouvelleCampagne.date_debut ? String(this.nouvelleCampagne.date_debut) : null,
+                date_fin: this.nouvelleCampagne.date_fin ? String(this.nouvelleCampagne.date_fin) : null,
+                statut: 'EN_COURS'
+            };
+
+            if (this.isEditing && this.nouvelleCampagne.id) {
+                campagneToSave.id = this.nouvelleCampagne.id;
+            }
+
+            await this.supabase.saveCampagne(campagneToSave);
+            await this.loadCampagnes();
+            this.closeModal();
+            this.cdr.detectChanges();
+
+            Swal.fire({
+                title: 'Succès !',
+                text: this.isEditing ? `Campagne modifiée avec succès !` : `Campagne sauvegardée avec succès sur Supabase !`,
+                icon: 'success',
+                confirmButtonColor: '#1b5e20'
+            });
+
+        } catch (e) {
+            console.error("Erreur lors de la sauvegarde de la campagne", e);
+            Swal.fire('Erreur', "Impossible de sauvegarder la campagne sur le cloud.", 'error');
+        }
     }
 
     goToSuivi(campagneId: number) {
         this.router.navigate(['/cotisations', campagneId]);
     }
 
-    deleteCampagne(id: any) {
+    async deleteCampagne(id: any) {
         Swal.fire({
             title: 'Confirmation',
-            text: 'Voulez-vous vraiment supprimer cette campagne et toutes ses données ?',
+            text: 'Voulez-vous vraiment supprimer cette campagne et toutes ses données sur Supabase ?',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Oui, supprimer',
             cancelButtonText: 'Non'
-        }).then((result) => {
+        }).then(async (result) => {
             if (result.isConfirmed) {
-                this.campagnes = this.campagnes.filter(c => Number(c.id) !== Number(id));
-                this.saveCampagnesToStorage();
-                localStorage.removeItem(`natangue_campagne_${id}_membres_v2`);
-                
-                Swal.fire(
-                    'Supprimé !',
-                    'La campagne a été supprimée.',
-                    'success'
-                );
+                try {
+                    await this.supabase.deleteCampagne(Number(id));
+                    await this.loadCampagnes();
+                    Swal.fire('Supprimé !', 'La campagne a été supprimée du cloud.', 'success');
+                } catch (e) {
+                    console.error("Erreur suppression campagne", e);
+                    Swal.fire('Erreur', "Impossible de supprimer la campagne.", 'error');
+                }
             }
         });
     }

@@ -17,7 +17,7 @@ export class LoginComponent {
     private supabase = inject(SupabaseService);
 
     // View state: Welcome vs Form
-    showForm = signal(false);
+    showForm = signal(true);
 
     // Password visibility
     showPassword = signal(false);
@@ -45,6 +45,7 @@ export class LoginComponent {
 
             try {
                 await this.supabase.signIn(email as string, password as string);
+                localStorage.setItem('isLoggedIn', 'true'); // Fallback local
                 this.router.navigate(['/membres']);
             } catch (err: any) {
                 this.errorMessage.set(err.message || 'Identifiants incorrects.');

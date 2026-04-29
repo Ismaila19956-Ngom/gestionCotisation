@@ -10,9 +10,8 @@
         <div style="flex: 1;">
             <h2 style="margin: 0; color: #1b5e20;">Suivi de Campagne #{{ campagneId }}</h2>
             <div style="font-size: 1.25rem; font-weight: 700; color: #1b5e20; margin-top: 0.25rem;">Total Général : {{ formatMontant(getTotalGeneral()) }}</div>
-            <p style="margin: 0.5rem 0 0.5rem 0; color: #555;">Détails des cotisations réparties par catégorie de montant.</p>
+            <p style="margin: 0.5rem 0 0.5rem 0; color: #555;">Détails des cotisations réparties par catégorie de montant (Stocké sur Supabase).</p>
             
-            <!-- Bouton PDF mis en évidence -->
             <button class="btn btn-pdf" (click)="generatePDF()"
                 style="background-color: #075A26; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 6px rgba(7, 90, 38, 0.2); margin-top: 10px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -26,11 +25,6 @@
             </button>
         </div>
         <div class="action-buttons">
-
-            <!-- <button class="btn btn-primary" (click)="addCotisationGlobal()"
-                style="background-color: #2e7d32; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                + Ajouter Cotisation
-            </button> -->
             <button class="btn btn-import" (click)="openImportModal()"
                 style="background-color: #1b5e20; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -45,7 +39,7 @@
         </div>
     </div>
 
-    <!-- Design avec Onglets Horizontaux pour les Catégories -->
+    <!-- Onglets Horizontaux -->
     <div class="categories-tabs">
         <button *ngFor="let cat of categories" class="tab-btn" [class.active]="activeTab === cat.montant"
             (click)="setActiveTab(cat.montant)">
@@ -53,82 +47,76 @@
         </button>
     </div>
 
-    <!-- Affichage sélectif du tableau actif -->
-    <div class="table-container" *ngFor="let cat of categories">
-        <div *ngIf="activeTab === cat.montant">
-
-            <div class="table-header-title" style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>Membres de la Catégorie : {{ cat.montant }} FCFA</h3>
-                <div class="total-badge"
-                    style="background:#f0fdf4; color:#16a34a; padding:0.5rem 1rem; border-radius:8px; font-weight:700;">
-                    Total Encaissé : {{ getTotalPayeByCategorie(cat.montant) | number }} FCFA
-                </div>
+    <div class="table-container">
+        <div class="table-header-title" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>Membres de la Catégorie : {{ activeTab }} FCFA</h3>
+            <div class="total-badge"
+                style="background:#f0fdf4; color:#16a34a; padding:0.5rem 1rem; border-radius:8px; font-weight:700;">
+                Total Encaissé : {{ formatMontant(getTotalPayeByCategorie(activeTab)) }}
             </div>
-
-            <table class="antigravity-table">
-                <thead>
-                    <tr>
-                        <th>Prénom</th>
-                        <th>Nom</th>
-                        <th>Catégorie</th>
-                        <th>État</th>
-                        <th>Montant Encaissé</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let membre of getPaginatedMembresByCategorie(cat.montant); let i = index">
-                        <td class="primary-text">{{ membre.prenom }}</td>
-                        <td class="primary-text">{{ membre.nom }}</td>
-                        <td>
-                            <span class="category-pill">{{ formatMontant(cat.montant) }}</span>
-                        </td>
-                        <td>
-                            <div class="count-badge"
-                                [ngClass]="(membre.unpaidMonthsCount || 0) > 0 ? 'delayed' : 'up-to-date'">
-                                <span class="count-number">
-                                    {{ (membre.unpaidMonthsCount || 0) > 0 ? 'En retard (' + membre.unpaidMonthsCount +
-                                    ')' : 'En règle' }}
-                                </span>
-                            </div>
-                        </td>
-                        <td class="primary-text" [ngClass]="{'text-success': (membre.paiementsMensuels?.length)}">
-                            {{ ((membre.paiementsMensuels ? getTotalEncaisseMembre(membre) : 0)) | number }} FCFA
-                        </td>
-                        <td class="actions">
-                            <button class="btn btn-icon btn-view" title="Détails & Cotisation"
-                                (click)="openDetailModal(membre)">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2.5">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr *ngIf="getMembresByCategorie(cat.montant).length === 0">
-                        <td colspan="6" style="text-align: center; color: #888;">Aucun membre dans cette catégorie pour
-                            l'instant.</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <app-pagination 
-                [currentPage]="currentPage" 
-                [totalPages]="getTotalPagesCategorie(cat.montant)" 
-                [totalItems]="getMembresByCategorie(cat.montant).length" 
-                [itemsPerPage]="itemsPerPage"
-                (pageChange)="onPageChange($event)"
-                (pageSizeChange)="onPageSizeChange($event)">
-            </app-pagination>
         </div>
+
+        <table class="antigravity-table">
+            <thead>
+                <tr>
+                    <th>Prénom</th>
+                    <th>Nom</th>
+                    <th>Catégorie</th>
+                    <th>État</th>
+                    <th>Encaissé</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let membre of membres">
+                    <td class="primary-text">{{ membre.prenom }}</td>
+                    <td class="primary-text">{{ membre.nom }}</td>
+                    <td>
+                        <span class="category-pill">{{ formatMontant(activeTab) }}</span>
+                    </td>
+                    <td>
+                        <div class="count-badge"
+                            [ngClass]="(membre.unpaidMonthsCount || 0) > 0 ? 'delayed' : 'up-to-date'">
+                            <span class="count-number">
+                                {{ (membre.unpaidMonthsCount || 0) > 0 ? 'En retard (' + membre.unpaidMonthsCount +
+                                ')' : 'En règle' }}
+                            </span>
+                        </div>
+                    </td>
+                    <td class="primary-text" [ngClass]="{'text-success': (membre.paiementsMensuels?.length)}">
+                        {{ formatMontant(getTotalEncaisseMembre(membre)) }}
+                    </td>
+                    <td class="actions">
+                        <button class="btn btn-icon btn-view" title="Détails & Cotisation"
+                            (click)="openDetailModal(membre)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="membres.length === 0">
+                    <td colspan="6" style="text-align: center; color: #888;">Aucun membre trouvé dans cette catégorie.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <app-pagination 
+            [currentPage]="currentPage" 
+            [totalPages]="Math.ceil(totalItems / itemsPerPage) || 1" 
+            [totalItems]="totalItems" 
+            [itemsPerPage]="itemsPerPage"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)">
+        </app-pagination>
     </div>
 </div>
 
 <!-- Modal Détails & Cotisation -->
 <div class="modal-overlay fade-in" *ngIf="showDetailModal" (click)="closeDetailModal()">
     <div class="modal-card wide-modal fade-in-up" (click)="$event.stopPropagation()">
-        <!-- Header Vert Foncé Style Antigravité -->
         <div class="modal-header antigravite-header">
             <div class="header-left">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -153,7 +141,6 @@
                             <th>Statut</th>
                             <th>Avance</th>
                             <th>Reste</th>
-
                         </tr>
                     </thead>
                     <tbody>
@@ -189,7 +176,6 @@
                             <td class="fw-bold" [ngClass]="p.reste > 0 ? 'text-danger' : 'text-success'">
                                 {{ formatMontant(p.reste) }}
                             </td>
-
                         </tr>
                     </tbody>
                 </table>
@@ -205,7 +191,6 @@
     </div>
 </div>
 
-<!-- Modal d'Importation -->
 @if (showImportModal) {
 <app-cotisation-member-import-modal (close)="closeImportModal()" (import)="onMembersImported($event)">
 </app-cotisation-member-import-modal>
