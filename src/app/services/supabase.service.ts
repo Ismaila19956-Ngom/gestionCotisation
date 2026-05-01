@@ -176,7 +176,7 @@ export class SupabaseService {
             montant: montant,
             avance: 0,
             reste: montant,
-            statut: 'En retard'
+            statut: 'À payer'
         }));
 
         const { error } = await this.supabase.from('cotisations').insert(cotisations);
@@ -291,7 +291,7 @@ export class SupabaseService {
                             montant: montantReel,
                             avance: Math.round(Number(p?.avance || 0)),
                             reste: Math.round(Number(p?.reste || 0)),
-                            statut: p?.statut || 'En retard'
+                            statut: p?.statut || 'À payer'
                         });
                     }
                     // Insertion groupée des 12 mois pour ce membre

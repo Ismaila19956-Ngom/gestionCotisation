@@ -138,7 +138,7 @@ export class CotisationCampaignSuiviComponent implements OnInit, OnDestroy {
             }));
 
             const unpaidMonthsCount = paiementsMensuels.filter((p: CotisationMois) =>
-                p.statut === 'En retard' || (p.statut !== 'Payé' && p.statut !== 'Avance' && this.isPastOrCurrentMonth(p.mois))
+                p.statut === 'En retard' || (p.statut !== 'Payé' && p.statut !== 'Avance' && this.isStrictlyPastMonth(p.mois))
             ).length;
 
             return {
@@ -178,6 +178,17 @@ export class CotisationCampaignSuiviComponent implements OnInit, OnDestroy {
 
     getTotalEncaisseMembre(membre: MembreCotisation): number {
         return (membre.paiementsMensuels || []).reduce((sum: number, p: CotisationMois) => sum + (Number(p.avance) || 0), 0);
+    }
+
+
+    // Vérifie si un mois est STRICTEMENT passé (pour le calcul du retard réel)
+    private isStrictlyPastMonth(mois: string): boolean {
+        const monthsRange = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre"];
+        const now = new Date();
+        const currentMonthName = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"][now.getMonth()];
+        const targetIdx = monthsRange.indexOf(mois);
+        const currentIdx = monthsRange.indexOf(currentMonthName);
+        return targetIdx < currentIdx; // STRICTEMENT inférieur (exclut le mois en cours)
     }
 
     private isPastOrCurrentMonth(mois: string): boolean {
