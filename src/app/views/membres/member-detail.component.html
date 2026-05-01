@@ -69,7 +69,7 @@
                     </div>
                     <div class="info-item">
                         <span class="label">Catégorie:</span>
-                        <span class="value category-val">{{ formatMontant(+m.categorie) }} / mois</span>
+                        <span class="value category-val">{{ formatMontant(m.categorie_id) }} / mois</span>
                     </div>
                 </div>
 
@@ -142,7 +142,7 @@
                     <div class="crm-item"><span class="crm-label">Année:</span> <b class="crm-value">{{ m.dateAdhesion |
                             date:'yyyy' }}</b></div>
                     <div class="crm-item"><span class="crm-label">Catégorie:</span> <b class="crm-value">{{
-                            formatMontant(+m.categorie) }}</b></div>
+                            formatMontant(m.categorie_id) }}</b></div>
                     <div class="crm-item"><span class="crm-label">Parrain:</span> <b class="crm-value">M. Abdoulaye
                             DIOP</b></div>
                     <div class="crm-item"><span class="crm-label">Fonction:</span> <b class="crm-value">Membre Actif</b>

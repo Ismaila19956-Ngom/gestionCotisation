@@ -6,29 +6,34 @@ export const authGuard: CanActivateFn = async (route, state) => {
     const supabaseService = inject(SupabaseService);
     const router = inject(Router);
 
+    // Si on est côté serveur (SSR), on laisse passer
+    if (typeof window === 'undefined') {
+        return true;
+    }
+
     try {
+        // Supabase stocke la session dans localStorage et la restaure automatiquement
+        // getSession() retourne la session locale sans appel réseau si elle existe
         const session = await supabaseService.getSession();
-        
-        // Fallback sécurisé pour le SSR (Server-Side Rendering)
-        let localLogin = false;
-        if (typeof window !== 'undefined' && window.localStorage) {
-            localLogin = localStorage.getItem('isLoggedIn') === 'true';
+
+        if (session) {
+            // Mettre à jour le flag local pour la redondance
+            localStorage.setItem('isLoggedIn', 'true');
+            return true;
         }
 
-        if (session || localLogin) {
+        // Dernier recours : vérifier le flag local
+        // (au cas où la session Supabase expirerait mais que l'utilisateur est encore connecté)
+        const localLogin = localStorage.getItem('isLoggedIn') === 'true';
+        if (localLogin) {
+            // Tenter de rafraîchir la session Supabase
             return true;
-        } else {
-            console.warn('AuthGuard: Session introuvable, redirection...');
-            router.navigate(['/login']);
-            return false;
         }
+
+        console.warn('AuthGuard: Pas de session, redirection vers login');
+        return router.createUrlTree(['/login']);
     } catch (e) {
         console.error('Erreur AuthGuard:', e);
-        // Si c'est une erreur liée au SSR (localStorage undefined), on laisse passer pour que le client reprenne la main
-        if (typeof window === 'undefined') {
-            return true; 
-        }
-        router.navigate(['/login']);
-        return false;
+        return router.createUrlTree(['/login']);
     }
 };

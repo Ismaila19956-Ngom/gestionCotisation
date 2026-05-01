@@ -1,61 +1,59 @@
 <div class="cotisation-container">
     <div class="header-actions">
         <div class="period-selector">
+            <label class="period-label">Mois :</label>
             <select [(ngModel)]="selectedMonth" (change)="onPeriodChange()" class="natangue-select">
-                <option *ngFor="let month of months" [value]="month.value">{{ month.label }}</option>
-            </select>
-            <select [(ngModel)]="selectedYear" (change)="onPeriodChange()" class="natangue-select ml-2">
-                <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+                <option *ngFor="let month of months" [value]="month">{{ month }}</option>
             </select>
         </div>
-
-        <div class="action-buttons">
-            <ng-container *ngIf="isPeriodOpen(); else closedPeriodMessage">
-                <button class="btn btn-primary btn-add" (click)="addCotisation()">
-                    <span class="icon">+</span> Ajouter une Cotisation
-                </button>
-            </ng-container>
-            <ng-template #closedPeriodMessage>
-                <span class="badge-closed">Période clôturée</span>
-            </ng-template>
+        <div class="summary-badges">
+            <span class="badge-total">Encaissé : <strong>{{ formatMontant(totalEncaisse) }}</strong></span>
+            <span class="badge-late">En retard : <strong>{{ membresEnRetard }}</strong> membres</span>
         </div>
     </div>
 
-    <div class="table-container">
+    <div *ngIf="isLoading" class="loading-state">Chargement...</div>
+
+    <div class="table-container" *ngIf="!isLoading">
         <table class="antigravity-table">
             <thead>
                 <tr>
                     <th>#</th>
                     <th>Membre</th>
-                    <th>Catégorie</th>
                     <th>Montant Dû</th>
+                    <th>Versé</th>
+                    <th>Reste</th>
                     <th>Statut</th>
-                    <th>Actions</th>
+                    <th>Observation</th>
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let record of membersData; let i = index">
+                <tr *ngFor="let record of membersData; let i = index" [class.row-late]="record.statut === 'En retard'">
                     <td>{{ i + 1 }}</td>
-                    <td>{{ record.memberName }}</td>
-                    <td>{{ record.category }}</td>
-                    <td class="amount">{{ record.amountDue }} FCFA</td>
+                    <td><strong>{{ record.prenom }} {{ record.nom }}</strong></td>
+                    <td class="amount">{{ formatMontant(record.montantDu) }}</td>
+                    <td class="amount paid">{{ formatMontant(record.avance) }}</td>
+                    <td class="amount reste">{{ formatMontant(record.reste) }}</td>
                     <td>
-                        <ng-container *ngIf="getPaymentStatus(record.isPaid) as status">
-                            <span class="status-badge" [ngClass]="status.cssClass">{{ status.label }}</span>
-                        </ng-container>
+                        <span class="status-badge" [ngClass]="getStatutClass(record.statut)">
+                            {{ record.statut }}
+                        </span>
                     </td>
-                    <td class="actions">
-                        <!-- Add cotisation button per member, only if period is open -->
-                        <button class="btn btn-icon btn-pay" *ngIf="isPeriodOpen() && !record.isPaid"
-                            title="Payer cotisation">
-                            Payer
-                        </button>
-                        <button class="btn btn-icon btn-view" title="Voir historique">
-                            👁️
-                        </button>
-                    </td>
+                    <td class="observation">{{ record.observation || '—' }}</td>
+                </tr>
+                <tr *ngIf="membersData.length === 0">
+                    <td colspan="7" class="empty-state">Aucun membre trouvé pour ce mois.</td>
                 </tr>
             </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="2"><strong>TOTAL</strong></td>
+                    <td class="amount"><strong>{{ formatMontant(totalAttendu) }}</strong></td>
+                    <td class="amount paid"><strong>{{ formatMontant(totalEncaisse) }}</strong></td>
+                    <td class="amount reste"><strong>{{ formatMontant(totalAttendu - totalEncaisse) }}</strong></td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
         </table>
     </div>
-</div>
+</div>

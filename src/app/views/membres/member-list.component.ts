@@ -3,10 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MemberService } from '../../services/member.service';
+import { SupabaseService } from '../../services/supabase.service';
 import { Member, CategorieCotisation } from '../../models/cotisation.model';
 import { ContributionFormComponent } from './contribution-form.component';
 import { MemberFormComponent } from './member-form.component';
 import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
+import Swal from 'sweetalert2';
 
 @Component({
     selector: 'app-member-list',
@@ -17,10 +19,31 @@ import { PaginationComponent } from '../../shared/components/pagination/paginati
 })
 export class MemberListComponent implements OnInit {
     private memberService = inject(MemberService);
+    private supabase = inject(SupabaseService);
     private router = inject(Router);
 
+    // ── Search ────────────────────────────────────────────
+    searchQuery = signal('');
+    showSearchDropdown = signal(false);
+    showMemberPopup = signal(false);
+    popupMember = signal<Member | null>(null);
+    popupCotisations = signal<any[]>([]);
+    isLoadingPopup = signal(false);
+
+    searchResults = computed(() => {
+        const q = this.searchQuery().trim().toLowerCase();
+        if (q.length < 2) return [];
+        return this.members().filter(m =>
+            m.prenom.toLowerCase().includes(q) ||
+            m.nom.toLowerCase().includes(q)
+        ).slice(0, 8);
+    });
+
+    readonly MONTHS = ['Octobre', 'Novembre', 'Décembre', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre'];
+    readonly MONTH_NAMES = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
     selectedCategory = signal<CategorieCotisation | 'all'>('all');
-    selectedYear = signal<number | 'all'>('all');
+    selectedSexe = signal<'all' | 'M' | 'F'>('all');
 
     availableYears = Array.from({ length: 11 }, (_, i) => 2020 + i).reverse();
 
@@ -28,18 +51,16 @@ export class MemberListComponent implements OnInit {
 
     filteredMembers = computed(() => {
         const cat = this.selectedCategory();
-        const year = this.selectedYear();
+        const sexe = this.selectedSexe();
         let list = this.members();
 
         if (cat !== 'all') {
-            list = list.filter(m => m.categorie === cat);
+            const targetCat = Number(cat);
+            list = list.filter(m => Number(m.categorie_id) === targetCat);
         }
 
-        if (year !== 'all') {
-            list = list.filter(m => {
-                const joinYear = new Date(m.dateAdhesion).getFullYear();
-                return joinYear === Number(year);
-            });
+        if (sexe !== 'all') {
+            list = list.filter(m => m.sexe === sexe);
         }
 
         return list;
@@ -85,6 +106,76 @@ export class MemberListComponent implements OnInit {
     @HostListener('document:click')
     closeDropdowns() {
         this.activeDropdownId.set(null);
+        this.showSearchDropdown.set(false);
+    }
+
+    onSearchInput(event: Event) {
+        event.stopPropagation();
+        this.showSearchDropdown.set(true);
+    }
+
+    stopPropagation(event: Event) {
+        event.stopPropagation();
+    }
+
+    async onSelectSearchResult(member: Member, event: Event) {
+        event.stopPropagation();
+        this.showSearchDropdown.set(false);
+        this.searchQuery.set('');
+        this.popupMember.set(member);
+        this.isLoadingPopup.set(true);
+        this.showMemberPopup.set(true);
+        this.popupCotisations.set([]);
+
+        try {
+            const cotisRaw = await this.supabase.getCotisationsByMembre(member.id);
+            // Construire le calendrier complet de 12 mois
+            const calendar = this.MONTHS.map(mois => {
+                const found = cotisRaw.find((c: any) => c.mois === mois);
+                return {
+                    mois,
+                    montant: found ? Number(found.montant) : Number(member.categorie_id),
+                    avance: found ? Number(found.avance) : 0,
+                    reste: found ? Number(found.reste) : Number(member.categorie_id),
+                    statut: found ? found.statut : 'En retard',
+                    isCurrent: this.isCurrentMonth(mois)
+                };
+            });
+            this.popupCotisations.set(calendar);
+        } catch (e) {
+            console.error('Erreur chargement cotisations popup:', e);
+        } finally {
+            this.isLoadingPopup.set(false);
+        }
+    }
+
+    closeMemberPopup() {
+        this.showMemberPopup.set(false);
+        this.popupMember.set(null);
+        this.popupCotisations.set([]);
+    }
+
+    isCurrentMonth(mois: string): boolean {
+        const now = new Date();
+        return mois === this.MONTH_NAMES[now.getMonth()];
+    }
+
+    getTotalPayeMembre(): number {
+        return this.popupCotisations().reduce((s, c) => s + (c.avance || 0), 0);
+    }
+
+    getRetardCount(): number {
+        return this.popupCotisations().filter(c =>
+            (c.statut === 'En retard') && this.isPastOrCurrentMonth(c.mois)
+        ).length;
+    }
+
+    isPastOrCurrentMonth(mois: string): boolean {
+        const now = new Date();
+        const currentName = this.MONTH_NAMES[now.getMonth()];
+        const currentIdx = this.MONTHS.indexOf(currentName);
+        const targetIdx = this.MONTHS.indexOf(mois);
+        return targetIdx <= currentIdx;
     }
 
     ngOnInit(): void { }
@@ -100,14 +191,57 @@ export class MemberListComponent implements OnInit {
         this.activeDropdownId.set(null); // Close dropdown
     }
 
-    onSaveMember(memberData: Partial<Member>) {
-        console.log('Saving member data:', memberData);
-        if (this.memberToEdit()) {
-            this.memberService.updateMember({ ...this.memberToEdit()!, ...memberData } as Member);
-        } else {
-            this.memberService.addMember(memberData as Omit<Member, 'id'>);
+    async onDeleteMember(member: Member) {
+        const result = await Swal.fire({
+            title: 'Confirmer la suppression',
+            html: `Êtes-vous sûr de vouloir supprimer <strong>${member.prenom} ${member.nom}</strong> ?<br><small style="color:#e53e3e">Ses cotisations seront également supprimées.</small>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#c62828',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Oui, supprimer',
+            cancelButtonText: 'Annuler'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await this.memberService.deleteMember(member.id);
+                this.activeDropdownId.set(null);
+                Swal.fire({
+                    title: 'Supprimé !',
+                    text: `${member.prenom} ${member.nom} a été supprimé avec succès.`,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } catch (err: any) {
+                Swal.fire('Erreur', `Impossible de supprimer le membre : ${err.message || err}`, 'error');
+            }
         }
-        this.closeModals();
+    }
+
+    async onSaveMember(memberData: Partial<Member>) {
+        try {
+            if (this.memberToEdit()) {
+                await this.memberService.updateMember({ ...this.memberToEdit()!, ...memberData } as Member);
+                Swal.fire('Succès', 'Membre mis à jour avec succès', 'success');
+            } else {
+                await this.memberService.addMember(memberData as Omit<Member, 'id'>);
+                Swal.fire('Succès', 'Membre ajouté avec succès', 'success');
+            }
+            
+            // Rediriger le filtre vers la catégorie du membre pour qu'il soit visible
+            if (memberData.categorie_id) {
+                this.selectedCategory.set(Number(memberData.categorie_id) as any);
+                this.currentPage.set(1);
+            }
+            
+            this.closeModals();
+        } catch (err: any) {
+            console.error('Save error details:', err);
+            const errorMsg = err.error_description || err.message || JSON.stringify(err);
+            Swal.fire('Erreur', `Erreur lors de l'enregistrement : ${errorMsg}`, 'error');
+        }
     }
 
     onAddContribution(member: Member) {

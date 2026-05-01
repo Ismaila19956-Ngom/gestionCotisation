@@ -7,226 +7,15 @@ import { environment } from '../../environments/environment';
     providedIn: 'root'
 })
 export class SupabaseService {
-    private supabase: SupabaseClient;
+    public supabase: SupabaseClient;
 
     constructor() {
-        // Configuration Supabase depuis l'environnement
         this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
     }
 
-    get client() {
-        return this.supabase;
-    }
+    get client() { return this.supabase; }
 
-    // --- Campagnes ---
-    async getCampagnes() {
-        const { data, error } = await this.supabase
-            .from('campagnes')
-            .select('*')
-            .order('annee', { ascending: false });
-        if (error) throw error;
-        return data;
-    }
-
-    async saveCampagne(campagne: any) {
-        const { data, error } = await this.supabase
-            .from('campagnes')
-            .upsert(campagne)
-            .select();
-        if (error) throw error;
-        return data[0];
-    }
-
-    async deleteCampagne(id: number) {
-        const { error } = await this.supabase
-            .from('campagnes')
-            .delete()
-            .eq('id', id);
-        if (error) throw error;
-    }
-
-    // --- Membres ---
-    async getMembresPagine(campagneId: number, page: number, pageSize: number) {
-        const from = (page - 1) * pageSize;
-        const to = from + pageSize - 1;
-
-        const { data, error, count } = await this.supabase
-            .from('membres')
-            .select('*', { count: 'exact' })
-            .eq('campagne_id', campagneId)
-            .order('nom', { ascending: true })
-            .range(from, to);
-
-        if (error) throw error;
-        return { data, count };
-    }
-
-    async getMembresByCategorie(campagneId: number, categorieMontant: number, page: number, pageSize: number) {
-        const from = (page - 1) * pageSize;
-        const to = from + pageSize - 1;
-
-        const { data, error, count } = await this.supabase
-            .from('membres')
-            .select('*', { count: 'exact' })
-            .eq('campagne_id', campagneId)
-            .eq('categorie_id', this.getCategorieIdFromMontant(categorieMontant))
-            .order('nom', { ascending: true })
-            .range(from, to);
-
-        if (error) throw error;
-        return { data, count };
-    }
-
-    // Helper pour mapper le montant à l'ID de catégorie (Toujours des Nombres)
-    private getCategorieIdFromMontant(montant: any): number {
-        const val = Number(montant);
-        const mapping: { [key: number]: number } = { 1000: 1, 2000: 2, 3000: 3, 5000: 4, 10000: 5 };
-        return mapping[val] || 1;
-    }
-
-    // --- Cotisations ---
-    async getCotisationsByMembre(membreId: number) {
-        const { data, error } = await this.supabase
-            .from('cotisations')
-            .select('*')
-            .eq('membre_id', membreId)
-            .order('mois', { ascending: true });
-        if (error) throw error;
-        return data;
-    }
-
-    async saveCotisation(cotisation: any) {
-        const { data, error } = await this.supabase
-            .from('cotisations')
-            .upsert(cotisation)
-            .select();
-        if (error) throw error;
-        return data[0];
-    }
-
-    async updateCotisation(id: string, updates: any) {
-        const { data, error } = await this.supabase
-            .from('cotisations')
-            .update(updates)
-            .eq('id', id)
-            .select();
-        if (error) throw error;
-        return data[0];
-    }
-
-    // --- Migration & Sync ---
-    async initialSyncToSupabase() {
-        console.log('Démarrage de la synchronisation initiale robuste vers Supabase...');
-
-        try {
-            // 1. Initialisation Campagne (Octobre à Septembre)
-            const newCampagne = {
-                id: 1,
-                annee: 2025,
-                libelle: 'Saison 2025/2026',
-                mois_debut: 10,
-                mois_fin: 9,
-                statut: 'EN_COURS'
-            };
-            
-            // On utilise upsert pour s'assurer que la campagne ID=1 existe
-            const { data: savedCamp, error: campErr } = await this.supabase.from('campagnes').upsert(newCampagne).select();
-            if (campErr) {
-                console.error('Erreur lors de la création de la campagne:', campErr);
-                return;
-            }
-            
-            const campagneId = savedCamp[0].id;
-            console.log('Campagne validée, ID:', campagneId);
-
-            // NETTOYAGE : Pour une "Migration Complète", on vide les anciennes données de cette campagne
-            console.log('Nettoyage des anciennes données...');
-            await this.supabase.from('cotisations').delete().eq('campagne_id', campagneId);
-            await this.supabase.from('membres').delete().eq('campagne_id', campagneId);
-
-            // Liste complète des mois de la campagne
-            const monthsRange = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre"];
-
-            console.log(`Insertion de ${membresCampagneData.length} membres...`);
-
-            // 2. Insérer les membres et leurs cotisations
-            for (const m of membresCampagneData) {
-                const nameParts = m.nom ? m.nom.split(' ') : [''];
-                const nom = nameParts.length > 1 ? nameParts.pop() : m.nom;
-                const prenom = nameParts.length > 0 ? nameParts.join(' ') : '';
-
-                const membreData = {
-                    id: m.id,
-                    campagne_id: campagneId,
-                    categorie_id: this.getCategorieIdFromMontant(m.categorie),
-                    prenom: prenom,
-                    nom: nom,
-                    sexe: this.detectGender(prenom)
-                };
-
-                const { error: mErr } = await this.supabase.from('membres').insert(membreData);
-                if (mErr) {
-                    console.error(`Erreur insertion membre ${m.nom}:`, mErr);
-                    continue; // On continue avec le suivant si un membre échoue
-                }
-                
-                // Générer les cotisations pour tous les mois de la campagne
-                const jsonPaiements = (m as any).paiements || [];
-                const cotisations = monthsRange.map(nomMois => {
-                    const existing = jsonPaiements.find((p: any) => p.mois === nomMois);
-                    return {
-                        membre_id: Number(m.id),
-                        campagne_id: Number(campagneId),
-                        mois: nomMois,
-                        montant: Number(m.categorie),
-                        statut: existing ? existing.statut : this.calculateInitialStatut(nomMois),
-                        avance: existing ? Number(existing.avance || 0) : 0,
-                        reste: existing ? Number(existing.reste || 0) : Number(m.categorie),
-                        observation: existing ? existing.observation || '' : ''
-                    };
-                });
-
-                const { error: cErr } = await this.supabase.from('cotisations').insert(cotisations);
-                if (cErr) console.error(`Erreur insertion cotisations pour ${m.nom}:`, cErr);
-            }
-
-            console.log('Synchronisation initiale terminée avec succès !');
-        } catch (err) {
-            console.error('Erreur globale lors de la synchronisation:', err);
-        }
-    }
-
-    private detectGender(prenom: string): string {
-        const p = prenom.toLowerCase();
-        const maleNames = ['massamba', 'papa', 'pierre', 'ismaila', 'abdou', 'moussa', 'aliou', 'cheikh', 'amadou'];
-        const femaleNames = ['adja', 'fatou', 'aminata', 'mariama', 'khadija', 'binta', 'awa', 'coumba', 'ramatoulaye'];
-
-        if (maleNames.some(name => p.includes(name))) return 'H';
-        if (femaleNames.some(name => p.includes(name))) return 'F';
-        
-        return 'H'; // Par défaut
-    }
-
-    private calculateInitialStatut(nomMois: string): string {
-        const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
-        const now = new Date();
-        const currentMonth = now.getMonth() + 1;
-        const currentDay = now.getDate();
-        const moisIndex = monthNames.indexOf(nomMois) + 1;
-        
-        if (moisIndex > currentMonth) return 'En cours';
-        if (moisIndex < currentMonth) return 'En retard';
-        return currentDay >= 10 ? 'En retard' : 'En cours';
-    }
-
-    subscribeToChanges(table: string, callback: (payload: any) => void) {
-        return this.supabase
-            .channel(`${table}_changes`)
-            .on('postgres_changes', { event: '*', schema: 'public', table }, callback)
-            .subscribe();
-    }
-
-    // --- Auth & Session ---
+    // --- Auth ---
     async getSession() {
         const { data: { session } } = await this.supabase.auth.getSession();
         return session;
@@ -238,17 +27,133 @@ export class SupabaseService {
         return data;
     }
 
-    // --- Méthodes pour MemberService (Utilise uniquement la table 'membres') ---
-    async getMembers() {
-        const { data, error } = await this.supabase.from('membres').select('*');
-        if (error) throw error;
+    async signOut() { await this.supabase.auth.signOut(); }
+
+    // --- Campagnes ---
+    async getCampagnes() {
+        const { data } = await this.supabase.from('campagnes').select('*').order('annee', { ascending: false });
+        return data || [];
+    }
+
+    async getActiveCampagne() {
+        const { data } = await this.supabase.from('campagnes').select('*').eq('statut', 'EN_COURS').limit(1).maybeSingle();
         return data;
     }
 
-    async getCotisations() {
-        const { data, error } = await this.supabase.from('cotisations').select('*');
+    async saveCampagne(campagne: any) {
+        const { data, error } = await this.supabase.from('campagnes').upsert(campagne).select();
         if (error) throw error;
-        return data;
+        return data[0];
+    }
+
+    async deleteCampagne(id: number) {
+        await this.supabase.from('campagnes').delete().eq('id', id);
+    }
+
+    // --- Configuration des Catégories ---
+    async getCategories() {
+        try {
+            const { data, error } = await this.supabase.from('config_categories').select('*').order('montant', { ascending: true });
+            if (error) throw error;
+            return data || [];
+        } catch (e) {
+            console.warn('Using local fallback for categories');
+            const local = localStorage.getItem('asc_categories');
+            return local ? JSON.parse(local) : [
+                { id: 1, montant: 1000, actif: true },
+                { id: 2, montant: 2000, actif: true },
+                { id: 3, montant: 3000, actif: true },
+                { id: 4, montant: 5000, actif: true },
+                { id: 10, montant: 10000, actif: true }
+            ];
+        }
+    }
+
+    async saveCategory(category: any) {
+        try {
+            const { data, error } = await this.supabase.from('config_categories').upsert(category).select();
+            if (error) throw error;
+            return data[0];
+        } catch (e) {
+            // Fallback localStorage
+            const categories = await this.getCategories();
+            if (!category.id) category.id = Date.now();
+            
+            const index = categories.findIndex((c: any) => c.id === category.id || c.montant === category.montant);
+            if (index >= 0) categories[index] = category;
+            else categories.push(category);
+            
+            localStorage.setItem('asc_categories', JSON.stringify(categories));
+            return category;
+        }
+    }
+
+    async deleteCategory(id: number) {
+        try {
+            const { error } = await this.supabase.from('config_categories').delete().eq('id', id);
+            if (error) throw error;
+        } catch (e) {
+            const categories = await this.getCategories();
+            const filtered = categories.filter((c: any) => c.id !== id);
+            localStorage.setItem('asc_categories', JSON.stringify(filtered));
+        }
+    }
+
+    // --- Membres ---
+    async getMembers() {
+        const campagne = await this.getActiveCampagne();
+        if (!campagne) return [];
+        return this.getMembersByCampagne(campagne.id);
+    }
+
+    async getMembersByCampagne(campagneId: number) {
+        const { data } = await this.supabase.from('membres').select('*').eq('campagne_id', campagneId).limit(5000);
+        return data || [];
+    }
+
+    async getAllGlobalMembers() {
+        try {
+            const { data, error } = await this.supabase
+                .from('membres')
+                .select('prenom, nom, sexe, telephone')
+                .limit(500); // Limite raisonnable pour la rapidité
+
+            if (error) throw error;
+            
+            const unique = [];
+            const seen = new Set();
+            if (data) {
+                for (const m of data) {
+                    const key = `${m.prenom?.toLowerCase()}|${m.nom?.toLowerCase()}`;
+                    if (!seen.has(key)) {
+                        unique.push(m);
+                        seen.add(key);
+                    }
+                }
+            }
+            return unique;
+        } catch (e) {
+            console.error('Failed to fetch global members:', e);
+            return [];
+        }
+    }
+
+    async getMembresByCategorie(campagneId: number, categorieMontant: number, page: number, pageSize: number) {
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+
+        // FILTRAGE ULTRA-STRICT : categorie_id DOIT ÊTRE LE MONTANT REEL
+        console.log(`Supabase Query: categorie_id = ${categorieMontant}`);
+        const { data, error, count } = await this.supabase
+            .from('membres')
+            .select('*', { count: 'exact' })
+            .eq('campagne_id', campagneId)
+            .eq('categorie_id', Number(categorieMontant))
+            .order('nom', { ascending: true })
+            .range(from, to);
+
+        if (error) throw error;
+        return { data, count };
     }
 
     async addMember(member: any) {
@@ -257,8 +162,68 @@ export class SupabaseService {
         return data[0];
     }
 
+    async initializeMemberCotisations(memberId: number, campagneId: number, montant: number = 0) {
+        const months = [
+            'Octobre', 'Novembre', 'Décembre',
+            'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+            'Juillet', 'Août', 'Septembre'
+        ];
+
+        const cotisations = months.map(mois => ({
+            membre_id: memberId,
+            campagne_id: campagneId,
+            mois: mois,
+            montant: montant,
+            avance: 0,
+            reste: montant,
+            statut: 'En retard'
+        }));
+
+        const { error } = await this.supabase.from('cotisations').insert(cotisations);
+        if (error) throw error;
+    }
+
     async updateMember(id: number, updates: any) {
         const { data, error } = await this.supabase.from('membres').update(updates).eq('id', id).select();
+        if (error) throw error;
+        return data[0];
+    }
+
+    async deleteMember(id: number) {
+        // Supprimer d'abord les cotisations liées pour l'intégrité référentielle
+        await this.supabase.from('cotisations').delete().eq('membre_id', id);
+        // Puis supprimer le membre
+        const { error } = await this.supabase.from('membres').delete().eq('id', id);
+        if (error) throw error;
+    }
+
+    // --- Cotisations ---
+    async getCotisations() {
+        const campagne = await this.getActiveCampagne();
+        if (!campagne) return [];
+        return this.getCotisationsByCampagne(campagne.id);
+    }
+
+    async getCotisationsByCampagne(campagneId: number) {
+        const { data } = await this.supabase.from('cotisations').select('*').eq('campagne_id', campagneId).limit(5000);
+        return data || [];
+    }
+
+    async getCotisationsByMembre(membreId: number) {
+        const campagne = await this.getActiveCampagne();
+        if (!campagne) return [];
+        const { data } = await this.supabase.from('cotisations').select('*').eq('membre_id', membreId).eq('campagne_id', campagne.id);
+        return data || [];
+    }
+
+    async saveCotisation(cotisation: any) {
+        const { data, error } = await this.supabase.from('cotisations').upsert(cotisation).select();
+        if (error) throw error;
+        return data[0];
+    }
+
+    async updateCotisation(id: string, updates: any) {
+        const { data, error } = await this.supabase.from('cotisations').update(updates).eq('id', id).select();
         if (error) throw error;
         return data[0];
     }
@@ -266,5 +231,78 @@ export class SupabaseService {
     async addCotisation(cotisation: any) {
         return this.saveCotisation(cotisation);
     }
-}
 
+    // --- Sync & Realtime ---
+    subscribeToChanges(table: string, callback: (payload: any) => void) {
+        return this.supabase
+            .channel(`realtime-${table}-${Math.random()}`)
+            .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => callback(payload))
+            .subscribe();
+    }
+
+    async initialSyncToSupabase() {
+        try {
+            console.log('--- RÉINITIALISATION RADICALE (AUCUN MAPPING) ---');
+
+            // 1. Vidage total
+            await this.supabase.from('cotisations').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+            await this.supabase.from('membres').delete().neq('id', 0);
+            await this.supabase.from('campagnes').delete().neq('id', 0);
+
+            // 2. Création de la campagne
+            const { data: campData } = await this.supabase.from('campagnes').insert([{ libelle: 'Saison 2025/2026', annee: '2025/2026', statut: 'EN_COURS' }]).select();
+            const campagneId = campData![0].id;
+            const months = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre"];
+
+            // 3. Migration Membre par Membre avec MONTANT REEL
+            // 3. Migration Membre par Membre avec MONTANT REEL
+            console.log("Début de l'insertion des membres et cotisations...");
+            
+            for (const m of membresCampagneData) {
+                const parts = m.nom ? m.nom.trim().split(' ') : [''];
+                const nom = parts.length > 1 ? parts.pop() : m.nom;
+                const prenom = parts.length > 0 ? parts.join(' ') : '';
+                const montantReel = Number(m.categorie);
+
+                // Insertion du membre
+                const { data: memRes, error: memErr } = await this.supabase
+                    .from('membres')
+                    .insert([{
+                        campagne_id: campagneId,
+                        categorie_id: montantReel,
+                        prenom, nom, sexe: m.sexe === 'Femme' ? 'F' : 'H'
+                    }])
+                    .select().single();
+
+                if (memErr) {
+                    console.error(`Erreur pour ${prenom} ${nom}:`, memErr);
+                    continue;
+                }
+
+                if (memRes) {
+                    const cotisBatch = [];
+                    const jsonP = (m as any).paiements || [];
+                    for (const mois of months) {
+                        const p = jsonP.find((x: any) => x.mois === mois);
+                        cotisBatch.push({
+                            membre_id: memRes.id,
+                            campagne_id: campagneId,
+                            mois,
+                            montant: montantReel,
+                            avance: Math.round(Number(p?.avance || 0)),
+                            reste: Math.round(Number(p?.reste || 0)),
+                            statut: p?.statut || 'En retard'
+                        });
+                    }
+                    // Insertion groupée des 12 mois pour ce membre
+                    const { error: cotErr } = await this.supabase.from('cotisations').insert(cotisBatch);
+                    if (cotErr) console.error(`Erreur cotisations pour ${prenom} ${nom}:`, cotErr);
+                }
+            }
+            console.log('MIGRATION TERMINÉE AVEC SUCCÈS.');
+        } catch (e) {
+            console.error('FATAL SYNC ERROR:', e);
+            throw e;
+        }
+    }
+}

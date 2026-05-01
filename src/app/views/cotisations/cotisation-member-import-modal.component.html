@@ -30,26 +30,41 @@
                             <th style="width: 40px;">
                                 <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)">
                             </th>
-                            <th style="width: 25%;">CODE</th>
-                            <th style="width: 45%;">NOM COMPLET</th>
-                            <th style="width: 30%;">TÉLÉPHONE</th>
+                            <th style="width: 20%;">CODE</th>
+                            <th style="width: 35%;">NOM COMPLET</th>
+                            <th style="width: 20%;">TÉLÉPHONE</th>
+                            <th style="width: 25%;">CATÉGORIE</th>
                         </tr>
                     </thead>
                     <tbody>
                         @for (member of paginatedMembers; track member.id) {
-                        <tr [class.selected]="member.selected" (click)="member.selected = !member.selected">
+                        <tr [class.selected]="member.selected" (click)="member.selected = !member.selected; onToggleMember(member)">
                             <td (click)="$event.stopPropagation()">
-                                <input type="checkbox" [(ngModel)]="member.selected">
+                                <input type="checkbox" [(ngModel)]="member.selected" (change)="onToggleMember(member)">
                             </td>
                             <td>
                                 <span class="member-code">{{ member.codeMembre }}</span>
                             </td>
                             <td>{{ member.prenom }} {{ member.nom }}</td>
                             <td>{{ member.telephone }}</td>
+                            <td (click)="$event.stopPropagation()">
+                                @if (member.selected) {
+                                <select [(ngModel)]="member.category" class="form-select-sm" 
+                                    style="padding: 4px; border-radius: 4px; border: 1px solid #064e3b; font-size: 0.85rem; width: 100%;">
+                                    <option [value]="1000">1 000 FCFA</option>
+                                    <option [value]="2000">2 000 FCFA</option>
+                                    <option [value]="3000">3 000 FCFA</option>
+                                    <option [value]="5000">5 000 FCFA</option>
+                                    <option [value]="10000">10 000 FCFA</option>
+                                </select>
+                                } @else {
+                                <span style="color: #999; font-size: 0.8rem; font-style: italic;">Non sélectionné</span>
+                                }
+                            </td>
                         </tr>
                         } @empty {
                         <tr>
-                            <td colspan="4" class="empty-state">Aucun membre trouvé.</td>
+                            <td colspan="5" class="empty-state">Aucun membre trouvé dans la base.</td>
                         </tr>
                         }
                     </tbody>

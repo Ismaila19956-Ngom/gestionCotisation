@@ -5,7 +5,7 @@
                 <span class="avatar">{{ member.prenom[0] }}{{ member.nom[0] }}</span>
                 <div>
                     <h5>Historique des Cotisations</h5>
-                    <p>{{ member.prenom }} {{ member.nom }} — {{ member.categorie }} F/mois</p>
+                    <p>{{ member.prenom }} {{ member.nom }} — {{ formatMontant(member.categorie_id) }} / mois</p>
                 </div>
             </div>
             <button class="close-btn" (click)="close.emit()">

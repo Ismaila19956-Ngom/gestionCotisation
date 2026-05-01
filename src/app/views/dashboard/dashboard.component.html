@@ -1,111 +1,218 @@
-<div class="breadcrumb-nav fade-in">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item active">Tableau de Bord</li>
-    </ol>
-</div>
+<!-- ══════════════════════════════════════════════════ -->
+<!--  DASHBOARD ASC NATANGUÉ — Premium SaaS Design     -->
+<!-- ══════════════════════════════════════════════════ -->
 
-<div class="dashboard-container">
-    <!-- Header with Analytics Title & Export -->
-    <div class="dashboard-header-card fade-in">
-        <div class="header-top">
-            <div class="title-group">
-                <div class="icon-box">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#004d1a" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+<div class="db-wrapper fade-in">
+
+    <!-- ── HEADER CARD ─────────────────────────────── -->
+    <div class="db-header">
+        <div class="db-header__top">
+            <div class="db-header__brand">
+                <div class="db-header__logo">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
                 </div>
                 <div>
-                    <h4>Tableau de Bord Analytique</h4>
-                    <p class="subtitle">Vue d'ensemble de vos activités d'ASC Natangué</p>
+                    <h1 class="db-header__title">ASC Natangué</h1>
+                    <p class="db-header__subtitle">Vue d'ensemble des cotisations · Saison 2025/2026</p>
                 </div>
             </div>
-            <div class="header-actions">
-                <div class="year-selector">
-                    <label>Année</label>
-                    <select class="form-select-sm">
+
+            <div class="db-header__actions">
+                <div class="db-year-selector">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <select class="db-year-select">
                         <option>2026</option>
                     </select>
                 </div>
-                <button class="btn-exporter">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    Exporter
+
+                <button class="db-btn db-btn--amber" (click)="syncData()" title="Réinitialiser depuis JSON">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <path d="M23 4v6h-6"/>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    <span>Sync Cloud</span>
                 </button>
+
+                <div class="db-export-container">
+                    <button class="db-btn db-btn--primary" (click)="toggleExport($event)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        <span>Exporter</span>
+                        <svg class="chevron" [class.open]="isExportOpen()" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </button>
+
+                    <div class="db-dropdown" *ngIf="isExportOpen()">
+                        <button class="db-dropdown-item" (click)="exporterSynthese()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            Générer la fiche de synthèse
+                        </button>
+                        <button class="db-dropdown-item" (click)="exporterDetails()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="3" y1="9" x2="21" y2="9"></line>
+                                <line x1="9" y1="21" x2="9" y2="9"></line>
+                            </svg>
+                            Détails des cotisations
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Green Navigation Tabs -->
-        <div class="dashboard-nav-tabs">
-            <button *ngFor="let cat of categories" class="nav-tab" [class.active]="activeTab() === cat.id" (click)="activeTab.set(cat.id)">
+        <!-- Navigation Tabs -->
+        <div class="db-tabs">
+            <button
+                *ngFor="let cat of categories"
+                class="db-tab"
+                [class.db-tab--active]="activeTab() === cat.id"
+                (click)="activeTab.set(cat.id)">
                 {{ cat.nom }}
             </button>
-            <!-- L'onglet Comptabilité est commenté à la demande -->
-            <!-- <button class="nav-tab">Comptabilité & Finances</button> -->
         </div>
     </div>
 
-    <!-- ── Quick Stats ──────────────────────────────────── -->
-    <div class="row mt-4 fade-in">
-        <div class="col">
-            <div class="stat-card primary">
-                <div class="stat-icon">💰</div>
-                <div class="stat-content">
-                    <div class="stat-label">Total Recu</div>
-                    <div class="stat-value">{{ formatMontant(filteredStats().totalRecu) }}</div>
-                </div>
+    <!-- ── KPI CARDS ────────────────────────────────── -->
+    <div class="db-kpis">
+
+        <!-- Reçu -->
+        <div class="kpi-card kpi-card--green" style="animation-delay: 0.05s">
+            <div class="kpi-card__accent"></div>
+            <div class="kpi-card__icon kpi-card__icon--green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+            </div>
+            <div class="kpi-card__body">
+                <span class="kpi-card__label">Total Reçu</span>
+                <span class="kpi-card__value">{{ formatMontant(filteredStats().totalRecu) }}</span>
+                <span class="kpi-card__sub">Cotisations encaissées</span>
             </div>
         </div>
-        <div class="col">
-            <div class="stat-card success">
-                <div class="stat-icon">📅</div>
-                <div class="stat-content">
-                    <div class="stat-label">Attendu ce mois</div>
-                    <div class="stat-value">{{ formatMontant(filteredStats().totalAttendu) }}</div>
-                </div>
+
+        <!-- Attendu -->
+        <div class="kpi-card kpi-card--amber" style="animation-delay: 0.1s">
+            <div class="kpi-card__accent"></div>
+            <div class="kpi-card__icon kpi-card__icon--amber">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+            </div>
+            <div class="kpi-card__body">
+                <span class="kpi-card__label">Montant Attendu</span>
+                <span class="kpi-card__value">{{ formatMontant(filteredStats().totalAttendu) }}</span>
+                <span class="kpi-card__sub">Cotisations mensuelles cumulées</span>
             </div>
         </div>
-        <div class="col">
-            <div class="stat-card warning">
-                <div class="stat-icon">⚠️</div>
-                <div class="stat-content">
-                    <div class="stat-label">Arriérés</div>
-                    <div class="stat-value">{{ formatMontant(filteredStats().arrieres) }}</div>
-                </div>
+
+        <!-- Arriérés -->
+        <div class="kpi-card kpi-card--red" style="animation-delay: 0.15s">
+            <div class="kpi-card__accent"></div>
+            <div class="kpi-card__icon kpi-card__icon--red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
+            <div class="kpi-card__body">
+                <span class="kpi-card__label">Arriérés</span>
+                <span class="kpi-card__value">{{ formatMontant(filteredStats().arrieres) }}</span>
+                <span class="kpi-card__sub">Montants non réglés</span>
             </div>
         </div>
-        <div class="col">
-            <div class="stat-card info">
-                <div class="stat-icon">🚀</div>
-                <div class="stat-content">
-                    <div class="stat-label">Avances</div>
-                    <div class="stat-value">{{ formatMontant(filteredStats().avances) }}</div>
-                </div>
+
+        <!-- Avances -->
+        <div class="kpi-card kpi-card--blue" style="animation-delay: 0.2s">
+            <div class="kpi-card__accent"></div>
+            <div class="kpi-card__icon kpi-card__icon--blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+            </div>
+            <div class="kpi-card__body">
+                <span class="kpi-card__label">Avances</span>
+                <span class="kpi-card__value">{{ formatMontant(filteredStats().avances) }}</span>
+                <span class="kpi-card__sub">Paiements en excédent</span>
             </div>
         </div>
     </div>
 
-    <!-- ── Recouvrement & Recent ─────────────────────────── -->
-    <div class="dashboard-grid mt-4 fade-in">
-        <div class="card card-recouvrement">
-            <div class="card-header">
+    <!-- ── CENTRAL SECTION ──────────────────────────── -->
+    <div class="db-central">
+
+        <!-- Taux de Recouvrement — SVG Circle -->
+        <div class="db-card db-card--recouvrement">
+            <div class="db-card__header">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#004d1a" stroke-width="2.2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
                 <h5>Taux de Recouvrement</h5>
             </div>
-            <div class="card-body">
-                <div class="progress-container">
-                    <div class="progress-circle">
-                        <span class="percentage">{{ filteredStats().tauxRecouvrement }}%</span>
+            <div class="db-card__body recouvrement-body">
+                <!-- SVG Progress Circle -->
+                <div class="circle-progress">
+                    <svg viewBox="0 0 120 120" class="circle-svg">
+                        <circle class="circle-track" cx="60" cy="60" r="50"/>
+                        <circle class="circle-fill" cx="60" cy="60" r="50"
+                            [style.strokeDashoffset]="314 - (314 * filteredStats().tauxRecouvrement / 100)"/>
+                    </svg>
+                    <div class="circle-label">
+                        <span class="circle-pct">{{ filteredStats().tauxRecouvrement }}%</span>
+                        <span class="circle-sub">Recouvrement</span>
                     </div>
-                    <p class="description">Recouvrement actuel sur les cotisations attendues.</p>
-                    <div class="progress-bar-flat">
-                        <div class="progress-fill" [style.width.%]="filteredStats().tauxRecouvrement"></div>
+                </div>
+
+                <div class="recouvrement-details">
+                    <p class="recouvrement-desc">Taux actuel de recouvrement sur les cotisations attendues pour la période sélectionnée.</p>
+                    <div class="recouvrement-bar">
+                        <div class="recouvrement-bar__fill" [style.width.%]="filteredStats().tauxRecouvrement"></div>
+                    </div>
+                    <div class="recouvrement-stats">
+                        <div class="rs-item">
+                            <span class="rs-dot rs-dot--green"></span>
+                            <span>Reçu : {{ formatMontant(filteredStats().totalRecu) }}</span>
+                        </div>
+                        <div class="rs-item">
+                            <span class="rs-dot rs-dot--gray"></span>
+                            <span>Attendu : {{ formatMontant(filteredStats().totalAttendu) }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card recent-payments">
-            <div class="card-header">
-                <h5>Derniers Versements ({{ activeTab() === 'all' ? 'Tous' : activeTab() }})</h5>
+        <!-- Derniers Versements -->
+        <div class="db-card db-card--payments">
+            <div class="db-card__header">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#004d1a" stroke-width="2.2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                <h5>Derniers Versements</h5>
+                <span class="db-card__badge">{{ activeTab() === 'all' ? 'Tous groupes' : getActiveTabName() }}</span>
             </div>
-            <div class="table-container">
-                <table class="antigravite-table">
+            <div class="db-card__body">
+                <table class="db-table">
                     <thead>
                         <tr>
                             <th>Membre</th>
@@ -117,21 +224,76 @@
                     <tbody>
                         @for (payment of filteredRecentPayments(); track payment.id) {
                         <tr>
-                            <td>{{ payment.memberName }}</td>
-                            <td class="fw-bold">{{ formatMontant(payment.montantVerse) }}</td>
-                            <td class="text-muted">{{ payment.mois }}</td>
+                            <td class="db-table__name">
+                                <div class="db-avatar">{{ payment.memberName.charAt(0) }}</div>
+                                {{ payment.memberName }}
+                            </td>
+                            <td class="db-table__amount">{{ formatMontant(payment.montantVerse) }}</td>
+                            <td class="db-table__mois">{{ payment.mois }}</td>
                             <td>
-                                <span class="badge" [class.badge-success]="payment.status === 'À jour'"
-                                    [class.badge-info]="payment.status === 'Avance'"
-                                    [class.badge-warning]="payment.status === 'Rappel'">
+                                <span class="db-badge"
+                                    [class.db-badge--green]="payment.status === 'À jour'"
+                                    [class.db-badge--blue]="payment.status === 'Avance'"
+                                    [class.db-badge--amber]="payment.status === 'Rappel'">
                                     {{ payment.status }}
                                 </span>
                             </td>
                         </tr>
+                        } @empty {
+                        <tr><td colspan="4" class="db-table__empty">Aucun versement récent.</td></tr>
                         }
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
+    <!-- ── CATEGORY CARDS ───────────────────────────── -->
+    <div class="db-section-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        État par catégorie
+    </div>
+
+    <div class="db-categories">
+        @for (cat of categories.slice(1); track cat.id) {
+        <div class="cat-card" (click)="activeTab.set(cat.id)" [class.cat-card--active]="activeTab() === cat.id">
+            <div class="cat-card__badge">{{ formatMontant(+cat.montant!) }}</div>
+            <div class="cat-card__members">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                {{ getMemberCount(cat.montant) }} membres
+            </div>
+            <div class="cat-card__stats">
+                <div class="cat-stat">
+                    <span class="cat-stat__label">Reçu</span>
+                    <span class="cat-stat__val green">{{ formatMontant(getCatStats(cat.montant).recu) }}</span>
+                </div>
+                <div class="cat-stat">
+                    <span class="cat-stat__label">Attendu</span>
+                    <span class="cat-stat__val">{{ formatMontant(getCatStats(cat.montant).attendu) }}</span>
+                </div>
+                <div class="cat-stat">
+                    <span class="cat-stat__label">Arriérés</span>
+                    <span class="cat-stat__val red">{{ formatMontant(getCatStats(cat.montant).arrieres) }}</span>
+                </div>
+            </div>
+            <div class="cat-card__bar-wrapper">
+                <div class="cat-card__bar"
+                    [style.width.%]="getCatStats(cat.montant).attendu > 0 ? (getCatStats(cat.montant).recu / getCatStats(cat.montant).attendu * 100) : 0">
+                </div>
+            </div>
+            <div class="cat-card__pct">
+                {{ getCatStats(cat.montant).attendu > 0 ? ((getCatStats(cat.montant).recu / getCatStats(cat.montant).attendu * 100) | number:'1.0-0') : 0 }}% recouvré
+            </div>
+        </div>
+        }
+    </div>
+
 </div>

@@ -22,18 +22,28 @@ export class CotisationListComponent implements OnInit {
         return [
             {
                 label: 'Catégorie 10 000 F',
-                members: allm.filter(m => m.categorie === '10000'),
+                members: allm.filter(m => Number(m.categorie_id) === 10000),
                 color: 'success'
             },
             {
                 label: 'Catégorie 5 000 F',
-                members: allm.filter(m => m.categorie === '5000'),
+                members: allm.filter(m => Number(m.categorie_id) === 5000),
+                color: 'primary'
+            },
+            {
+                label: 'Catégorie 3 000 F',
+                members: allm.filter(m => Number(m.categorie_id) === 3000),
                 color: 'warning'
             },
             {
                 label: 'Catégorie 2 000 F',
-                members: allm.filter(m => m.categorie === '2000'),
+                members: allm.filter(m => Number(m.categorie_id) === 2000),
                 color: 'info'
+            },
+            {
+                label: 'Catégorie 1 000 F',
+                members: allm.filter(m => Number(m.categorie_id) === 1000),
+                color: 'secondary'
             }
         ];
     });

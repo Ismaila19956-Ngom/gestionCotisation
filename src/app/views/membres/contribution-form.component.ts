@@ -32,7 +32,7 @@ export class ContributionFormComponent implements OnInit {
     };
 
     // Pre-calculate to avoid complexity in template
-    categoryAmount = computed(() => this.member ? parseInt(this.member.categorie) : 0);
+    categoryAmount = computed(() => this.member ? Number(this.member.categorie_id) : 0);
 
     constructor() {
         console.log('--- ContributionFormComponent Constructor ---');
