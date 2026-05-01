@@ -1,0 +1,106 @@
+<div class="galerie-container">
+    <div class="header-section">
+        <div>
+            <h1>Gestion de la Galerie</h1>
+            <p>Modérez et publiez les moments forts du club</p>
+        </div>
+        <button class="g-button g-button_view_action g-button_size_l" (click)="openModal()">
+            <span class="g-button__icon">+</span> Ajouter une image
+        </button>
+    </div>
+
+    @if (isLoading()) {
+        <div class="loading-state">
+            <span class="g-loader g-loader_size_l"></span>
+            <p>Synchronisation avec la base de données...</p>
+        </div>
+    } @else {
+        <div class="photo-grid">
+            @for (img of images(); track img.id) {
+                <div class="g-card photo-card">
+                    <div class="card-media">
+                        <img [src]="img.image_url" [alt]="img.titre">
+                        
+                        <!-- Badges de Statut interactifs -->
+                        <div class="status-overlay">
+                            @if (img.statut === 'brouillon') {
+                                <span class="g-label g-label_theme_warning g-label_size_m badge-clickable" 
+                                      (click)="toggleStatut(img)"
+                                      title="Cliquer pour publier">
+                                    Brouillon (⏳)
+                                </span>
+                            } @else {
+                                <span class="g-label g-label_theme_success g-label_size_m badge-clickable"
+                                      (click)="toggleStatut(img)"
+                                      title="Cliquer pour retirer la publication">
+                                    En ligne (✅)
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="card-content">
+                        <div class="card-info">
+                            <h3 class="g-text g-text_variant_subheader-1">{{ img.titre }}</h3>
+                            <span class="date">{{ img.created_at | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                        
+                        <button class="btn-delete-circle" (click)="deleteImage(img)" title="Supprimer définitivement">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            } @empty {
+                <div class="empty-state">
+                    <div class="icon">🖼️</div>
+                    <h3>Aucune image</h3>
+                    <p>Commencez à remplir votre galerie de club.</p>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Modal d'Upload -->
+    @if (showUploadModal()) {
+        <div class="modal-backdrop" (click)="closeModal()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+                <div class="modal-header">
+                    <h2>Nouvelle Image</h2>
+                    <button class="close-btn" (click)="closeModal()">✕</button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Légende / Titre</label>
+                        <input type="text" [(ngModel)]="titre" placeholder="Ex: Match contre..." class="form-input">
+                    </div>
+
+                    <div class="upload-zone" (click)="fileInput.click()" [class.has-preview]="previewUrl()">
+                        <input type="file" #fileInput (change)="onFileSelected($event)" hidden accept="image/*">
+                        
+                        @if (previewUrl()) {
+                            <img [src]="previewUrl()" class="preview-img">
+                        } @else {
+                            <div class="upload-placeholder">
+                                <span class="icon">📸</span>
+                                <p>Cliquer pour choisir une photo</p>
+                                <span class="hint">Redimensionnement auto inclus</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+                    <button class="btn-submit" [disabled]="isUploading() || !selectedFile() || !titre()" (click)="uploadImage()">
+                        @if (isUploading()) {
+                            <span class="g-loader g-loader_size_s"></span> Envoi...
+                        } @else {
+                            Publier (Brouillon)
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>

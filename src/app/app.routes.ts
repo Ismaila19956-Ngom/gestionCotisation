@@ -74,6 +74,12 @@ export const routes: Routes = [
                     import('./views/parametres/parametres.component')
                         .then(m => m.ParametresComponent)
             },
+            {
+                path: 'galerie',
+                loadComponent: () =>
+                    import('./views/galerie/galerie.component')
+                        .then(m => m.GalerieComponent)
+            },
         ]
     },
     {
