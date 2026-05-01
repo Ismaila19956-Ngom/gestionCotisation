@@ -44,10 +44,15 @@
                             <span class="badge badge-inactif" *ngIf="!cat.actif">Inactif</span>
                         </td>
                         <td data-label="Actions">
-                            <button (click)="toggleStatut(cat)"
-                                [class]="cat.actif ? 'btn-toggle btn-deactivate' : 'btn-toggle btn-activate'">
-                                {{ cat.actif ? 'Désactiver' : 'Activer' }}
-                            </button>
+                            <div style="display: flex; gap: 5px;">
+                                <button (click)="toggleStatut(cat)"
+                                    [class]="cat.actif ? 'btn-toggle btn-deactivate' : 'btn-toggle btn-activate'">
+                                    {{ cat.actif ? 'Désactiver' : 'Activer' }}
+                                </button>
+                                <button (click)="supprimerCategorie(cat.id)" class="btn-toggle" style="background-color: #fee2e2; color: #dc2626; border-color: #fecaca;">
+                                    Supprimer
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>

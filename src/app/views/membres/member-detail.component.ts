@@ -45,7 +45,7 @@ export class MemberDetailComponent implements OnInit {
 
     get age(): number {
         const m = this.member();
-        return m ? this.memberService.calculateAge(m.dateNaissance) : 0;
+        return m ? this.memberService.calculateAge(m.dateNaissance || '') : 0;
     }
 
     formatMontant(v: number) {

@@ -29,6 +29,7 @@ export interface MembreCotisation {
     id: number;
     campagneId: number;
     categorieId: number;
+    categorie_id: number;
     memberId: number;
     prenom: string;
     nom: string;

@@ -1,14 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { SupabaseService } from '../../services/supabase.service';
 
-interface MemberCotisation {
+interface MemberRow {
     id: number;
-    memberId: number;
-    memberName: string;
-    category: string;
-    amountDue: number;
-    isPaid: boolean;
+    prenom: string;
+    nom: string;
+    categorieId: number;
+    montantDu: number;
+    statut: string;
+    avance: number;
+    reste: number;
+    observation: string;
 }
 
 @Component({
@@ -19,82 +23,101 @@ interface MemberCotisation {
     styleUrls: ['./cotisation-period.component.scss']
 })
 export class CotisationPeriodComponent implements OnInit {
-    selectedMonth: number = new Date().getMonth(); // 0 to 11
-    selectedYear: number = new Date().getFullYear();
+    private supabase = inject(SupabaseService);
+
+    readonly CATEGORIE_MAP: { [key: number]: number } = {
+        1: 1000, 2: 2000, 3: 3000, 4: 5000, 5: 10000
+    };
 
     months = [
-        { value: 0, label: 'Janvier' },
-        { value: 1, label: 'Février' },
-        { value: 2, label: 'Mars' },
-        { value: 3, label: 'Avril' },
-        { value: 4, label: 'Mai' },
-        { value: 5, label: 'Juin' },
-        { value: 6, label: 'Juillet' },
-        { value: 7, label: 'Août' },
-        { value: 8, label: 'Septembre' },
-        { value: 9, label: 'Octobre' },
-        { value: 10, label: 'Novembre' },
-        { value: 11, label: 'Décembre' }
+        'Octobre', 'Novembre', 'Décembre',
+        'Janvier', 'Février', 'Mars',
+        'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre'
     ];
 
-    years: number[] = [];
+    selectedMonth = 'Janvier';
+    isLoading = false;
+    membersData: MemberRow[] = [];
 
-    // Static mock data
-    membersData: MemberCotisation[] = [
-        { id: 1, memberId: 101, memberName: 'Mamadou Ndiaye', category: 'Actif', amountDue: 5000, isPaid: true },
-        { id: 2, memberId: 102, memberName: 'Aissatou Sow', category: 'Sympathisant', amountDue: 2000, isPaid: false },
-        { id: 3, memberId: 103, memberName: 'Ibrahima Fall', category: 'Actif', amountDue: 5000, isPaid: false },
-    ];
+    get totalEncaisse(): number {
+        return this.membersData.reduce((sum, m) => sum + (m.avance || 0), 0);
+    }
 
-    constructor() {
-        const currentYear = new Date().getFullYear();
-        for (let i = currentYear - 5; i <= currentYear + 2; i++) {
-            this.years.push(i);
-        }
+    get totalAttendu(): number {
+        return this.membersData.reduce((sum, m) => sum + (m.montantDu || 0), 0);
+    }
+
+    get membresEnRetard(): number {
+        return this.membersData.filter(m => m.statut === 'En retard').length;
     }
 
     ngOnInit() {
-        this.refreshData();
+        this.loadData();
     }
 
-    isPeriodOpen(): boolean {
-        const now = new Date();
-        // In Angular/JS, months are 0-indexed.
-        return this.selectedMonth === now.getMonth() && this.selectedYear === now.getFullYear();
+    async onPeriodChange() {
+        await this.loadData();
     }
 
-    getPaymentStatus(isPaid: boolean): { label: string, cssClass: string } {
-        if (isPaid) {
-            return { label: 'Payé', cssClass: 'status-paid' };
+    async loadData() {
+        this.isLoading = true;
+        this.membersData = [];
+        try {
+            const campagne = await this.supabase.getActiveCampagne();
+
+            // Get all members for this campaign
+            const { data: membres } = await this.supabase.client
+                .from('membres')
+                .select('*')
+                .eq('campagne_id', campagne.id)
+                .order('categorie_id', { ascending: false });
+
+            if (!membres) { this.isLoading = false; return; }
+
+            // Get cotisations for the selected month
+            const { data: cotisations } = await this.supabase.client
+                .from('cotisations')
+                .select('*')
+                .eq('campagne_id', campagne.id)
+                .eq('mois', this.selectedMonth);
+
+            const cotisMap = new Map<number, any>();
+            (cotisations || []).forEach((c: any) => cotisMap.set(c.membre_id, c));
+
+            this.membersData = membres.map((m: any) => {
+                const cot = cotisMap.get(m.id);
+                // Le montant est maintenant directement dans categorie_id
+                const montantDu = Number(m.categorie_id) || 0;
+                return {
+                    id: m.id,
+                    prenom: m.prenom,
+                    nom: m.nom,
+                    categorieId: m.categorie_id,
+                    montantDu,
+                    statut: cot?.statut || 'En retard',
+                    avance: Number(cot?.avance) || 0,
+                    reste: Number(cot?.reste) || montantDu,
+                    observation: cot?.observation || ''
+                };
+            });
+        } catch (err) {
+            console.error('Erreur chargement cotisations:', err);
         }
-
-        if (!this.isPeriodOpen()) {
-            // Past period and not paid = Retardataire
-            return { label: 'Retardataire', cssClass: 'status-late' };
-        }
-
-        const todayDate = new Date().getDate();
-        // Current period and not paid
-        if (todayDate <= 10) {
-            return { label: 'En attente', cssClass: 'status-pending' };
-        } else {
-            return { label: 'Retardataire', cssClass: 'status-late' };
-        }
+        this.isLoading = false;
     }
 
-    onPeriodChange() {
-        this.refreshData();
+    formatMontant(v: number): string {
+        return new Intl.NumberFormat('fr-FR').format(v) + ' F';
     }
 
-    refreshData() {
-        // In a real application, you would make an API call to get members and their payments for selected period.
-        console.log(`Loading data for ${this.selectedMonth + 1}/${this.selectedYear}`);
-    }
-
-    addCotisation() {
-        if (this.isPeriodOpen()) {
-            console.log('Open modal to add cotisation');
-            // Implémentation du modal / redirection vers formulaire d'ajout
-        }
+    getStatutClass(statut: string): string {
+        const map: { [k: string]: string } = {
+            'Payé': 'status-paid',
+            'En cours': 'status-pending',
+            'En retard': 'status-late',
+            'Partiel': 'status-partial',
+            'Avance': 'status-advance'
+        };
+        return map[statut] || 'status-pending';
     }
 }

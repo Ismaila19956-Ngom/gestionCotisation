@@ -21,13 +21,16 @@ export class CotisationService {
         let avances = 0;
 
         allMembers.forEach(m => {
-            totalAttendu += parseInt(m.categorie);
+            totalAttendu += Number(m.categorie_id) || 0;
         });
 
         cotis.forEach(c => {
             totalRecu += c.montantVerse;
-            if (c.status === 'Rappel') arrieres += (parseInt(this.memberService.getMemberById(c.membreId)?.categorie || '0') - c.montantVerse); // Simplified logic
-            if (c.status === 'Avance') avances += (c.montantVerse - parseInt(this.memberService.getMemberById(c.membreId)?.categorie || '0'));
+            const member = this.memberService.getMemberById(c.membreId);
+            const catVal = member ? Number(member.categorie_id) || 0 : 0;
+            
+            if (c.status === 'Rappel') arrieres += (catVal - c.montantVerse);
+            if (c.status === 'Avance') avances += (c.montantVerse - catVal);
         });
 
         const percent = totalAttendu > 0 ? (totalRecu / totalAttendu) * 100 : 0;

@@ -32,7 +32,7 @@ export class MemberFormComponent implements OnInit {
             nom: ['', [Validators.required, Validators.minLength(2)]],
             dateNaissance: ['', [Validators.required]],
             sexe: ['', [Validators.required]],
-            categorie: ['10000', [Validators.required]],
+            categorie_id: ['10000', [Validators.required]],
             dateAdhesion: [new Date().toISOString().split('T')[0], [Validators.required]],
         });
     }

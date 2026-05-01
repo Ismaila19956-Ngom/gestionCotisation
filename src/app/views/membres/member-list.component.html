@@ -15,21 +15,76 @@
                 <option value="all">Tous les membres</option>
                 <option value="10000">10 000 F</option>
                 <option value="5000">5 000 F</option>
+                <option value="3000">3 000 F</option>
                 <option value="2000">2 000 F</option>
+                <option value="1000">1 000 F</option>
             </select>
         </div>
 
         <div class="filter-group">
-            <label for="year">Année :</label>
-            <select id="year" [ngModel]="selectedYear()" (ngModelChange)="selectedYear.set($event); currentPage.set(1)"
+            <label for="sexe">Sexe :</label>
+            <select id="sexe" [ngModel]="selectedSexe()" (ngModelChange)="selectedSexe.set($event); currentPage.set(1)"
                 class="form-select w-auto">
-                <option value="all">Toutes</option>
-                @for (year of availableYears; track year) {
-                <option [value]="year">{{ year }}</option>
-                }
+                <option value="all">Tous</option>
+                <option value="M">Hommes</option>
+                <option value="F">Femmes</option>
             </select>
         </div>
     </div>
+
+    <!-- ── Search Bar (CNAAS Style) ── -->
+    <div class="search-wrapper" (click)="stopPropagation($event)">
+        <div class="search-input-box">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+                type="text"
+                class="search-input"
+                placeholder="Rechercher un membre (nom ou prénom)..."
+                [ngModel]="searchQuery()"
+                (ngModelChange)="searchQuery.set($event)"
+                (click)="onSearchInput($event)"
+                (input)="onSearchInput($event)"
+                autocomplete="off"
+            />
+            @if (searchQuery().length > 0) {
+            <button class="search-clear" (click)="searchQuery.set(''); showSearchDropdown.set(false)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            }
+        </div>
+
+        <!-- Dropdown de résultats -->
+        @if (showSearchDropdown() && searchResults().length > 0) {
+        <div class="search-dropdown fade-in">
+            @for (m of searchResults(); track m.id) {
+            <div class="search-result-item" (click)="onSelectSearchResult(m, $event)">
+                <div class="result-avatar" [class.f]="m.sexe === 'F'">
+                    {{ m.prenom.charAt(0) }}{{ m.nom.charAt(0) }}
+                </div>
+                <div class="result-info">
+                    <div class="result-name">{{ m.prenom }} {{ m.nom }}</div>
+                    <div class="result-cat">{{ formatMontant(+m.categorie_id) }} / mois</div>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </div>
+            }
+        </div>
+        }
+        @if (showSearchDropdown() && searchQuery().length >= 2 && searchResults().length === 0) {
+        <div class="search-dropdown fade-in">
+            <div class="no-result">Aucun membre trouvé pour "{{ searchQuery() }}"</div>
+        </div>
+        }
+    </div>
+
     <button class="btn btn-primary" (click)="onAddMember()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="12" y1="5" x2="12" y2="19" />
@@ -82,19 +137,10 @@
                     </td>
                     <td class="text-muted">{{ member.dateNaissance | date:'dd/MM/yyyy' }}</td>
                     <td>
-                        <span class="category-pill">{{ formatMontant(+member.categorie) }}</span>
+                        <span class="category-pill">{{ formatMontant(+member.categorie_id) }}</span>
                     </td>
                     <td class="text-center">
                         <div class="action-buttons">
-                            <!-- <button class="btn-action view" (click)="onViewDetails(member)" title="Suivi Membre">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                    <polyline points="15 3 21 3 21 9"></polyline>
-                                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                                </svg>
-                            </button> -->
-
                             <div class="dropdown-container">
                                 <button class="btn-action more" (click)="toggleDropdown(member.id, $event)"
                                     title="Plus d'actions">
@@ -108,6 +154,14 @@
 
                                 @if (activeDropdownId() === member.id) {
                                 <div class="action-dropdown fade-in">
+                                    <button class="dropdown-item view" (click)="onSelectSearchResult(member, $event)">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                        Voir le statut
+                                    </button>
                                     <button class="dropdown-item edit" (click)="onEditMember(member)">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-width="2">
@@ -116,7 +170,7 @@
                                         </svg>
                                         Modifier
                                     </button>
-                                    <button class="dropdown-item delete">
+                                    <button class="dropdown-item delete" (click)="onDeleteMember(member)">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                                             stroke="currentColor" stroke-width="2">
                                             <polyline points="3 6 5 6 21 6"></polyline>
@@ -143,11 +197,11 @@
         </table>
     </div>
 
-    <!-- Pagination Inspired by CNAAS -->
-    <app-pagination 
-        [currentPage]="currentPage()" 
-        [totalPages]="totalPages()" 
-        [totalItems]="totalItems()" 
+    <!-- Pagination -->
+    <app-pagination
+        [currentPage]="currentPage()"
+        [totalPages]="totalPages()"
+        [totalItems]="totalItems()"
         [itemsPerPage]="itemsPerPage()"
         (pageChange)="setPage($event)"
         (pageSizeChange)="itemsPerPage.set($event); currentPage.set(1)">
@@ -161,4 +215,134 @@
 
 @if (showContributionForm()) {
 <app-contribution-form [member]="selectedMember()!" (close)="closeModals()" />
+}
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- Popup Statut Membre (Style CNAAS)                         -->
+<!-- ══════════════════════════════════════════════════════════ -->
+@if (showMemberPopup() && popupMember()) {
+<div class="popup-overlay fade-in" (click)="closeMemberPopup()">
+    <div class="popup-card fade-in-up" (click)="stopPropagation($event)">
+
+        <!-- En-tête vert CNAAS -->
+        <div class="popup-header">
+            <div class="popup-avatar">
+                <span>{{ popupMember()!.prenom.charAt(0) }}{{ popupMember()!.nom.charAt(0) }}</span>
+            </div>
+            <div class="popup-identity">
+                <h4>{{ popupMember()!.prenom }} {{ popupMember()!.nom }}</h4>
+                <span class="popup-category-badge">{{ formatMontant(+popupMember()!.categorie_id) }} / mois</span>
+            </div>
+            <button class="popup-close" (click)="closeMemberPopup()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Bandeau "Police active depuis..." style CNAAS -->
+        <div class="popup-status-banner" [class.en-retard]="getRetardCount() > 0" [class.en-regle]="getRetardCount() === 0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            @if (getRetardCount() === 0) {
+                <span><strong>Membre en règle</strong> — Toutes les cotisations dues sont payées.</span>
+            } @else {
+                <span><strong>{{ getRetardCount() }} mois en retard</strong> — Reste à régler : {{ formatMontant(getRetardCount() * +popupMember()!.categorie_id) }}</span>
+            }
+        </div>
+
+        <!-- Infos rapides style CNAAS (grille 2 colonnes) -->
+        <div class="popup-info-grid">
+            <div class="popup-info-cell">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f6c52" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <div>
+                    <div class="info-label">Genre</div>
+                    <div class="info-value">{{ popupMember()!.sexe === 'M' ? 'Homme' : 'Femme' }}</div>
+                </div>
+            </div>
+            <div class="popup-info-cell">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f6c52" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                <div>
+                    <div class="info-label">Total Encaissé</div>
+                    <div class="info-value green">{{ formatMontant(getTotalPayeMembre()) }}</div>
+                </div>
+            </div>
+            <div class="popup-info-cell">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f6c52" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                <div>
+                    <div class="info-label">Cotisation mensuelle</div>
+                    <div class="info-value">{{ formatMontant(+popupMember()!.categorie_id) }}</div>
+                </div>
+            </div>
+            <div class="popup-info-cell">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f6c52" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <div>
+                    <div class="info-label">Mois en retard</div>
+                    <div class="info-value" [class.danger]="getRetardCount() > 0">{{ getRetardCount() }} mois</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accordéon Calendrier de paiement -->
+        <div class="popup-section-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+            </svg>
+            Calendrier des cotisations (Oct → Sep)
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: auto;">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </div>
+
+        @if (isLoadingPopup()) {
+        <div class="popup-loading">
+            <div class="spinner"></div>
+            <span>Chargement du calendrier...</span>
+        </div>
+        } @else {
+        <div class="popup-calendar">
+            @for (c of popupCotisations(); track c.mois) {
+            <div class="cal-row" [class.current]="c.isCurrent" [class.paye]="c.statut === 'Payé'" [class.retard]="c.statut === 'En retard' && isPastOrCurrentMonth(c.mois)">
+                <div class="cal-mois">
+                    {{ c.mois }}
+                    @if (c.isCurrent) { <span class="badge-now">Actuel</span> }
+                </div>
+                <div class="cal-statut">
+                    <span class="statut-dot" [class.paye]="c.statut === 'Payé'" [class.retard]="c.statut === 'En retard'" [class.partiel]="c.statut === 'Partiel'"></span>
+                    {{ c.statut }}
+                </div>
+                <div class="cal-montant">
+                    <span [class.green]="c.avance > 0">{{ formatMontant(c.avance) }}</span>
+                    @if (c.reste > 0) {
+                    <span class="cal-reste">Reste : {{ formatMontant(c.reste) }}</span>
+                    }
+                </div>
+            </div>
+            }
+        </div>
+        }
+
+        <div class="popup-footer">
+            <button class="btn-popup-close" (click)="closeMemberPopup()">Fermer</button>
+        </div>
+    </div>
+</div>
 }
