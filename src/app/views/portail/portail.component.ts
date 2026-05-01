@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { SupabaseService } from '../../services/supabase.service';
 
 @Component({
   selector: 'app-portail',
@@ -9,7 +10,11 @@ import { RouterModule } from '@angular/router';
   templateUrl: './portail.component.html',
   styleUrls: ['./portail.component.scss']
 })
-export class PortailComponent {
+export class PortailComponent implements OnInit {
+  private supabase = inject(SupabaseService);
+  
+  photos = signal<any[]>([]);
+
   categories = [
     { name: 'Cotisations & Finances', description: 'Consultez les bilans et cotisations.' },
     { name: 'Événements & Culture', description: 'Activités culturelles et sorties.' },
@@ -19,6 +24,27 @@ export class PortailComponent {
 
   isDropdownOpen = false;
   isMobileMenuOpen = false;
+
+  async ngOnInit() {
+    await this.loadPublicPhotos();
+  }
+
+  async loadPublicPhotos() {
+    try {
+      // FILTRE CRITIQUE : Uniquement les photos publiées pour le portail public
+      const { data, error } = await this.supabase.client
+        .from('galerie')
+        .select('*')
+        .eq('statut', 'publier')
+        .order('created_at', { ascending: false })
+        .limit(6); // On affiche les 6 dernières photos
+
+      if (error) throw error;
+      this.photos.set(data || []);
+    } catch (e) {
+      console.error('Erreur chargement photos publiques', e);
+    }
+  }
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;

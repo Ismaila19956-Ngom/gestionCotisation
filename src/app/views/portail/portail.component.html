@@ -89,6 +89,29 @@
       </div>
     </div>
   </section>
+  <!-- Moments Forts (Galerie) -->
+  <section class="gallery-section" *ngIf="photos().length > 0">
+    <div class="section-container">
+      <div class="section-header">
+        <h2 class="section-title">Moments Forts</h2>
+        <div class="title-underline"></div>
+        <p class="section-subtitle">Retrouvez les dernières images de la vie de notre club.</p>
+      </div>
+
+      <div class="public-grid">
+        @for (photo of photos(); track photo.id) {
+          <div class="gallery-item fade-in-up">
+            <div class="image-wrapper">
+              <img [src]="photo.image_url" [alt]="photo.titre">
+              <div class="image-overlay">
+                <span class="photo-title">{{ photo.titre }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
 
   <!-- Footer Section -->
   <footer class="portail-footer">

@@ -25,6 +25,7 @@ export class SidebarComponent {
         { label: 'Tableau de Bord', icon: 'grid', route: '/dashboard' },
         { label: 'Membres', icon: 'users', route: '/membres' },
         { label: 'Cotisations', icon: 'credit-card', route: '/cotisations' },
+        { label: 'Galerie', icon: 'image', route: '/galerie' },
         // { label: 'Comptabilité', icon: 'bar-chart', route: '/comptabilite' },
         { label: 'Paramètres', icon: 'settings', route: '/parametres' },
     ]);
