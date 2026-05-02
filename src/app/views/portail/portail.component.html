@@ -1,147 +1,175 @@
-<div class="portail-wrapper">
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <div class="top-bar-container">
-      <div class="social-links">
-        <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a>
-        <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a>
-        <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg></a>
-        <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg></a>
+<!-- 1. Top bar -->
+<div class="top-bar">
+  <div class="container">
+    <span>contact@natangue.sn</span>
+    <span>+221 77 123 45 67</span>
+  </div>
+</div>
+
+<!-- 2. Navbar sticky -->
+<nav class="navbar">
+  <div class="container nav-container">
+    <div class="logo">
+      <div class="logo-icon"></div>
+      <span class="logo-text">Natangué</span>
+    </div>
+    
+    <div class="nav-links" [class.mobile-open]="isMobileMenuOpen">
+      <!-- Close button on mobile -->
+      <button class="mobile-close" (click)="toggleMobileMenu()" *ngIf="isMobileMenuOpen">&times;</button>
+      <a href="#">Accueil</a>
+      <a href="#services">Nos Services</a>
+      <a href="#galerie">Galerie</a>
+      <a href="#contact">Contact</a>
+    </div>
+
+    <div class="nav-actions">
+      <a routerLink="/auth/login" class="btn-login">Se connecter</a>
+      <button class="hamburger" (click)="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- overlay mobile -->
+<div class="mobile-overlay" *ngIf="isMobileMenuOpen" (click)="toggleMobileMenu()"></div>
+
+<!-- 3. Hero section -->
+<header class="hero">
+  <div class="hero-slide"
+    *ngFor="let slide of slides; let i = index"
+    [class.active]="i === currentSlide()"
+    [style.background-image]="'url(' + slide.image + ')'"
+  ></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-pattern"></div>
+  
+  <div class="container hero-container">
+    <div class="hero-content">
+      <div class="eyebrow">
+        <span class="line"></span>
+        <span class="text">ASC NATANGUÉ</span>
       </div>
-      <div class="contact-info">
-        <span>Tél: +221 33 000 00 00</span>
-        <span class="separator">|</span>
-        <span>contact@asc-natangue.sn</span>
+      <h1 class="hero-title">L'Excellence au Service de <em>Notre Communauté</em></h1>
+      <p class="hero-subtitle">Rejoignez une association dynamique, engagée pour le développement culturel, sportif et social de notre quartier.</p>
+      <div class="hero-buttons">
+        <a href="#services" class="btn btn-primary">Découvrir</a>
+        <a routerLink="/auth/login" class="btn btn-outline">Espace Membre</a>
       </div>
     </div>
   </div>
 
-  <!-- Navbar -->
-  <header class="navbar">
-    <div class="navbar-container">
+  <!-- Navigation flèches -->
+  <button class="slider-arrow slider-prev" (click)="prevSlide()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+  </button>
+  <button class="slider-arrow slider-next" (click)="nextSlide()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  </button>
+
+  <!-- Dots -->
+  <div class="slider-dots">
+    <button *ngFor="let s of slides; let i = index"
+      class="slider-dot"
+      [class.active]="i === currentSlide()"
+      (click)="goToSlide(i)"
+    ></button>
+  </div>
+</header>
+
+<!-- 4. Stats bar -->
+<section class="stats-bar">
+  <div class="container stats-container">
+    <div class="stat-item">
+      <span class="stat-number">150+</span>
+      <span class="stat-label">Membres actifs</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">24</span>
+      <span class="stat-label">Activités</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">4</span>
+      <span class="stat-label">Catégories</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">2005</span>
+      <span class="stat-label">Fondée en</span>
+    </div>
+  </div>
+</section>
+
+<!-- 5. Section services -->
+<section id="services" class="services">
+  <div class="container">
+    <div class="section-header">
+      <div class="eyebrow">
+        <span class="line"></span>
+        <span class="text">EXPERTISES</span>
+      </div>
+      <h2 class="section-title">Nos Domaines d'Action</h2>
+    </div>
+    <div class="services-grid">
+      <div class="service-card" *ngFor="let cat of categories">
+        <div class="service-content">
+          <h3 class="service-title">{{ cat.name }}</h3>
+          <p class="service-desc">{{ cat.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Galerie photos -->
+<section id="galerie" class="galerie">
+  <div class="container">
+    <div class="section-header">
+      <div class="eyebrow">
+        <span class="line"></span>
+        <span class="text">EN IMAGES</span>
+      </div>
+      <h2 class="section-title">Notre Galerie</h2>
+    </div>
+    <div class="gallery-grid">
+      <div class="gallery-item" *ngFor="let photo of photos()">
+        <img [src]="photo.image_url" [alt]="photo.titre || 'Photo Natangué'">
+        <div class="gallery-overlay">
+          <h4 class="gallery-title">{{ photo.titre }}</h4>
+        </div>
+      </div>
+      <div *ngIf="photos().length === 0" class="no-photos">
+        Aucune photo publiée pour le moment.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. Footer -->
+<footer id="contact" class="footer">
+  <div class="container footer-container">
+    <div class="footer-col brand-col">
       <div class="logo">
-        <div class="logo-circle">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1b5e20" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-        </div>
-        <span class="logo-text">ASC NATANGUÉ</span>
+        <div class="logo-icon"></div>
+        <span class="logo-text">Natangué</span>
       </div>
-      <button class="mobile-toggle" (click)="toggleMobileMenu()">
-        <svg *ngIf="!isMobileMenuOpen" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-        <svg *ngIf="isMobileMenuOpen" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-      </button>
-      
-      <nav class="nav-links" [class.show-mobile]="isMobileMenuOpen">
-        <a href="#" class="nav-link active">Accueil</a>
-        
-        <!-- Categories Dropdown (ng-tooltip equivalent) -->
-        <div class="dropdown-container" (mouseenter)="isDropdownOpen = true" (mouseleave)="isDropdownOpen = false">
-          <button class="nav-link dropdown-toggle" (click)="toggleDropdown()">
-            Catégories
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron"><polyline points="6 9 12 15 18 9"></polyline></svg>
-          </button>
-          
-          <div class="dropdown-menu fade-in" *ngIf="isDropdownOpen">
-            <a href="#" class="dropdown-item" *ngFor="let cat of categories">
-              <div class="cat-title">{{ cat.name }}</div>
-              <div class="cat-desc">{{ cat.description }}</div>
-            </a>
-          </div>
-        </div>
-
-        <a href="#" class="nav-link">Membres</a>
-        <a href="#" class="nav-link">Contact</a>
-      </nav>
-
-      <div class="nav-actions">
-        <button class="icon-btn" title="Recherche">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        </button>
-        <button class="icon-btn" title="Aide">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-        </button>
-        <button class="btn-login" routerLink="/login">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-          Se connecter
-        </button>
-      </div>
+      <p class="tagline">L'Excellence au Service de Notre Communauté.</p>
     </div>
-  </header>
-
-  <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <h1 class="hero-title fade-in-up">Portail de l'ASC Natangué</h1>
-      <p class="hero-subtitle fade-in-up delay-1">L'espace communautaire dédié à la gestion de nos activités, cotisations et événements.</p>
-      
-      <div class="hero-buttons fade-in-up delay-2">
-        <button class="btn-primary-lg">
-          Découvrir l'ASC
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 8px;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-        </button>
-      </div>
+    <div class="footer-col links-col">
+      <h4 class="col-title">Liens Rapides</h4>
+      <a href="#">Accueil</a>
+      <a href="#services">Nos Services</a>
+      <a href="#galerie">Galerie</a>
+      <a routerLink="/auth/login">Espace Membre</a>
     </div>
-    
-    <div class="hero-badge fade-in-up delay-3">
-      <div class="badge-circle">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-        <span>ASC NATANGUÉ</span>
-      </div>
+    <div class="footer-col contact-col">
+      <h4 class="col-title">Contact</h4>
+      <p>123 Rue de la Paix, Dakar</p>
+      <p>+221 77 123 45 67</p>
+      <p>contact@natangue.sn</p>
     </div>
-  </section>
-  <!-- Moments Forts (Galerie) -->
-  <section class="gallery-section" *ngIf="photos().length > 0">
-    <div class="section-container">
-      <div class="section-header">
-        <h2 class="section-title">Moments Forts</h2>
-        <div class="title-underline"></div>
-        <p class="section-subtitle">Retrouvez les dernières images de la vie de notre club.</p>
-      </div>
-
-      <div class="public-grid">
-        @for (photo of photos(); track photo.id) {
-          <div class="gallery-item fade-in-up">
-            <div class="image-wrapper">
-              <img [src]="photo.image_url" [alt]="photo.titre">
-              <div class="image-overlay">
-                <span class="photo-title">{{ photo.titre }}</span>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer Section -->
-  <footer class="portail-footer">
-    <div class="footer-container">
-      <div class="footer-grid">
-        <div class="footer-col brand">
-          <div class="footer-logo">
-            <span class="logo-text">ASC NATANGUÉ</span>
-          </div>
-          <p class="footer-desc">Solution de gestion intégrée dédiée à l'excellence et au développement de notre communauté.</p>
-        </div>
-        <div class="footer-col links">
-          <h4>Liens Rapides</h4>
-          <ul>
-            <li><a href="#">Accueil</a></li>
-            <li><a href="#">Catégories</a></li>
-            <li><a href="#">Membres</a></li>
-            <li><a href="#">Contact</a></li>
-          </ul>
-        </div>
-        <div class="footer-col contact">
-          <h4>Contactez-nous</h4>
-          <p>Dakar, Sénégal</p>
-          <p>Tél: +221 33 000 00 00</p>
-          <p>Email: contact@asc-natangue.sn</p>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2026 <span class="fw-bold">ASC NATANGUÉ</span> — Excellence & Engagement Communautaire</p>
-      </div>
-    </div>
-  </footer>
-</div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 ASC Natangué. Tous droits réservés.</p>
+  </div>
+</footer>

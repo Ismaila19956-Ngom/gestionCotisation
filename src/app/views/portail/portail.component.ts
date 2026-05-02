@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
@@ -10,7 +10,7 @@ import { SupabaseService } from '../../services/supabase.service';
   templateUrl: './portail.component.html',
   styleUrls: ['./portail.component.scss']
 })
-export class PortailComponent implements OnInit {
+export class PortailComponent implements OnInit, OnDestroy {
   private supabase = inject(SupabaseService);
   
   photos = signal<any[]>([]);
@@ -25,8 +25,46 @@ export class PortailComponent implements OnInit {
   isDropdownOpen = false;
   isMobileMenuOpen = false;
 
+  // Slider state
+  slides = [
+    { image: '/assets/images/image.jpg', alt: 'Activités sportives' },
+    { image: '/assets/images/image1.jpeg', alt: 'Vie culturelle' },
+    { image: '/assets/images/image3.jpeg', alt: 'La communauté' },
+  ];
+  currentSlide = signal(0);
+  private sliderInterval: any;
+
   async ngOnInit() {
+    this.startSlider();
     await this.loadPublicPhotos();
+  }
+
+  ngOnDestroy() {
+    if (this.sliderInterval) {
+      clearInterval(this.sliderInterval);
+    }
+  }
+
+  startSlider() {
+    this.sliderInterval = setInterval(() => {
+      this.currentSlide.update(val => (val + 1) % this.slides.length);
+    }, 6000);
+  }
+
+  goToSlide(index: number) {
+    this.currentSlide.set(index);
+    if (this.sliderInterval) {
+      clearInterval(this.sliderInterval);
+    }
+    this.startSlider();
+  }
+
+  nextSlide() {
+    this.goToSlide((this.currentSlide() + 1) % this.slides.length);
+  }
+
+  prevSlide() {
+    this.goToSlide((this.currentSlide() - 1 + this.slides.length) % this.slides.length);
   }
 
   async loadPublicPhotos() {
