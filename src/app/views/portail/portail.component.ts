@@ -25,12 +25,17 @@ export class PortailComponent implements OnInit, OnDestroy {
   isDropdownOpen = false;
   isMobileMenuOpen = false;
 
-  // Slider state
+  /**
+   * Configuration du Slider Hero
+   * Les images doivent être présentes dans src/assets/images/
+   */
   slides = [
     { image: '/assets/images/image.jpg', alt: 'Activités sportives' },
     { image: '/assets/images/image1.jpeg', alt: 'Vie culturelle' },
     { image: '/assets/images/image3.jpeg', alt: 'La communauté' },
   ];
+  
+  // Index du slide actuellement affiché (Signal pour la réactivité Zoneless)
   currentSlide = signal(0);
   private sliderInterval: any;
 
@@ -45,24 +50,28 @@ export class PortailComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Démarre le défilement automatique toutes les 6 secondes
   startSlider() {
     this.sliderInterval = setInterval(() => {
       this.currentSlide.update(val => (val + 1) % this.slides.length);
     }, 6000);
   }
 
+  // Navigation manuelle vers un slide spécifique
   goToSlide(index: number) {
     this.currentSlide.set(index);
     if (this.sliderInterval) {
       clearInterval(this.sliderInterval);
     }
-    this.startSlider();
+    this.startSlider(); // Reset le timer après action manuelle
   }
 
+  // Slide suivant
   nextSlide() {
     this.goToSlide((this.currentSlide() + 1) % this.slides.length);
   }
 
+  // Slide précédent
   prevSlide() {
     this.goToSlide((this.currentSlide() - 1 + this.slides.length) % this.slides.length);
   }

@@ -241,11 +241,16 @@ export class CotisationCampaignSuiviComponent implements OnInit, OnDestroy {
         this.selectedMembre = null;
     }
 
+    /**
+     * Enregistre les modifications de cotisations pour le membre sélectionné.
+     * Recalcule le statut (Payé, Partiel, En retard) en fonction de l'avance saisie.
+     */
     async onSaveDetail() {
         if (!this.selectedMembre) return;
         try {
             for (const p of this.selectedMembre.paiementsMensuels) {
                 let statut = p.statut;
+                // Calcul automatique du statut
                 if (p.avance >= p.montant) statut = 'Payé';
                 else if (p.avance > 0) statut = 'Partiel';
                 else statut = this.isPastOrCurrentMonth(p.mois) ? 'En retard' : 'En cours';
@@ -258,13 +263,14 @@ export class CotisationCampaignSuiviComponent implements OnInit, OnDestroy {
             }
             this.closeDetailModal();
             Swal.fire('Enregistré', 'Les cotisations ont été mises à jour.', 'success');
-            await this.loadAllData();
-            await this.loadMembres();
+            await this.loadAllData(); // Rafraîchir les données globales
+            await this.loadMembres(); // Rafraîchir la vue actuelle
         } catch (e) {
             Swal.fire('Erreur', 'Impossible d\'enregistrer les modifications.', 'error');
         }
     }
 
+    // Met à jour le "Reste à payer" en temps réel lors de la saisie
     onAvanceChange(p: any) {
         p.reste = Math.max(0, p.montant - (p.avance || 0));
     }
