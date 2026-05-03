@@ -706,3 +706,52 @@ a {
     gap: 2.5rem;
   }
 }
+
+/* Modal de Paiement Styles */
+.payment-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.payment-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 400px; /* Aligné sur la demande utilisateur */
+  background: transparent;
+  animation: slideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.close-modal-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #7987a1;
+  cursor: pointer;
+  z-index: 10;
+  transition: color 0.2s;
+  
+  &:hover {
+    color: #212a3a;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

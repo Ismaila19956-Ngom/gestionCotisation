@@ -2,11 +2,12 @@ import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SupabaseService } from '../../services/supabase.service';
+import { CotisationPayComponent } from './cotisations/cotisation-pay.component';
 
 @Component({
   selector: 'app-portail',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, CotisationPayComponent],
   templateUrl: './portail.component.html',
   styleUrls: ['./portail.component.scss']
 })
@@ -24,6 +25,7 @@ export class PortailComponent implements OnInit, OnDestroy {
 
   isDropdownOpen = false;
   isMobileMenuOpen = false;
+  isPaymentModalOpen = false;
 
   /**
    * Configuration du Slider Hero
@@ -99,5 +101,15 @@ export class PortailComponent implements OnInit, OnDestroy {
 
   toggleMobileMenu() {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  openPaymentModal(event?: Event) {
+    if (event) event.preventDefault();
+    this.isPaymentModalOpen = true;
+    this.isMobileMenuOpen = false; // Fermer le menu mobile si ouvert
+  }
+
+  closePaymentModal() {
+    this.isPaymentModalOpen = false;
   }
 }

@@ -20,6 +20,7 @@
       <a href="#">Accueil</a>
       <a href="#services">Nos Services</a>
       <a href="#galerie">Galerie</a>
+      <a href="#" (click)="openPaymentModal($event)">Paiement</a>
       <a href="#contact">Contact</a>
       <a routerLink="/auth/login" class="btn-login-mobile">Se connecter</a>
     </div>
@@ -176,3 +177,10 @@
     <p>&copy; 2026 ASC Natangué. Tous droits réservés.</p>
   </div>
 </footer>
+
+<!-- Modal de Paiement -->
+<div class="payment-modal-backdrop" *ngIf="isPaymentModalOpen" (click)="closePaymentModal()">
+  <div class="payment-modal-card" (click)="$event.stopPropagation()">
+    <app-cotisation-pay (close)="closePaymentModal()"></app-cotisation-pay>
+  </div>
+</div>

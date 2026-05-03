@@ -23,6 +23,12 @@ export const routes: Routes = [
                 .then(m => m.CotisationsComponent)
     },
     {
+        path: 'portail-paiement',
+        loadComponent: () =>
+            import('./views/portail/cotisations/cotisation-pay.component')
+                .then(m => m.CotisationPayComponent)
+    },
+    {
         path: 'portail-evenements',
         loadComponent: () =>
             import('./views/portail/evenements/evenements.component')
@@ -91,6 +97,18 @@ export const routes: Routes = [
                 loadComponent: () =>
                     import('./views/galerie/galerie.component')
                         .then(m => m.GalerieComponent)
+            },
+            {
+                path: 'matchs',
+                loadComponent: () =>
+                    import('./views/matchs/match-list/match-list.component')
+                        .then(m => m.MatchListComponent)
+            },
+            {
+                path: 'matchs/:id',
+                loadComponent: () =>
+                    import('./views/matchs/match-detail/match-detail.component')
+                        .then(m => m.MatchDetailComponent)
             },
         ]
     },

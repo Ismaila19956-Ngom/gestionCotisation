@@ -111,6 +111,17 @@ export class SupabaseService {
         return data || [];
     }
 
+    async getMemberByPhone(phone: string) {
+        const { data, error } = await this.supabase
+            .from('membres')
+            .select('*, config_categories(montant)')
+            .eq('telephone', phone)
+            .maybeSingle();
+        
+        if (error) throw error;
+        return data;
+    }
+
     async getAllGlobalMembers() {
         try {
             const { data, error } = await this.supabase
@@ -304,5 +315,62 @@ export class SupabaseService {
             console.error('FATAL SYNC ERROR:', e);
             throw e;
         }
+    }
+
+    // --- Match Management ---
+    async getMatches() {
+        const { data, error } = await this.supabase
+            .from('matchs')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        return data || [];
+    }
+
+    async addMatch(nomMatch: string) {
+        const { data, error } = await this.supabase
+            .from('matchs')
+            .insert([{ nom_match: nomMatch, date_match: new Date().toISOString().split('T')[0] }])
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    }
+
+    async getMatchById(id: string) {
+        const { data, error } = await this.supabase
+            .from('matchs')
+            .select('*')
+            .eq('id', id)
+            .single();
+        if (error) throw error;
+        return data;
+    }
+
+    async getMatchExpenses(matchId: string) {
+        const { data, error } = await this.supabase
+            .from('depenses_match')
+            .select('*')
+            .eq('match_id', matchId);
+        if (error) throw error;
+        return data || [];
+    }
+
+    async addMatchExpense(expense: any) {
+        const { data, error } = await this.supabase
+            .from('depenses_match')
+            .insert([expense])
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    }
+
+    async deleteMatchExpense(id: string) {
+        const { error } = await this.supabase
+            .from('depenses_match')
+            .delete()
+            .eq('id', id);
+        if (error) throw error;
     }
 }
