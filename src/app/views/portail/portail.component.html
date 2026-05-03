@@ -112,7 +112,9 @@
       <h2 class="section-title">Nos Domaines d'Action</h2>
     </div>
     <div class="services-grid">
-      <div class="service-card" *ngFor="let cat of categories">
+      <div class="service-card" *ngFor="let cat of categories" 
+           [routerLink]="cat.link ? cat.link : null"
+           [style.cursor]="cat.link ? 'pointer' : 'default'">
         <div class="service-content">
           <h3 class="service-title">{{ cat.name }}</h3>
           <p class="service-desc">{{ cat.description }}</p>

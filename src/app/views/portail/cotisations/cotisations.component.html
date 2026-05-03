@@ -1,0 +1,155 @@
+<div class="cotis-page">
+  <!-- 1. Header -->
+  <header class="page-header">
+    <div class="container">
+      <a routerLink="/" class="back-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Retour à l'accueil
+      </a>
+      <h1 class="page-title">Cotisations & Finances</h1>
+      <p class="page-subtitle">Tout savoir sur les cotisations de l'ASC Natangué</p>
+    </div>
+  </header>
+
+  <main class="content-wrapper container">
+    <!-- 2. Présentation -->
+    <section class="section-block">
+      <div class="eyebrow">
+        <span class="line"></span>
+        <span class="text">PRÉSENTATION</span>
+      </div>
+      <h2 class="section-title">Soutenez votre ASC</h2>
+      <p class="section-desc">
+        Les cotisations permettent de financer les activités sportives, culturelles et sociales de l'ASC Natangué. 
+        Chaque membre contribue selon sa capacité au développement de notre communauté.
+      </p>
+    </section>
+
+    <!-- 3. Catégories -->
+    <section class="section-block">
+      <div class="eyebrow">
+        <span class="line"></span>
+        <span class="text">TARIFS 2026</span>
+      </div>
+      <h2 class="section-title">Catégories de cotisation</h2>
+      <p class="section-desc">Choisissez librement la catégorie qui correspond à votre engagement.</p>
+
+      <div class="categories-grid">
+        <div class="cat-card" *ngFor="let cat of categories" [class.popular]="cat.popular">
+          <div class="popular-badge" *ngIf="cat.popular">Populaire</div>
+          <div class="cat-amount">
+            <span class="amount">{{ cat.montant | number:'1.0-0' }}</span>
+            <span class="currency">FCFA</span>
+            <span class="period">/ an</span>
+          </div>
+          <h3 class="cat-label">{{ cat.label }}</h3>
+          <p class="cat-desc">{{ cat.desc }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Comment payer ? -->
+    <section class="section-block">
+      <div class="eyebrow">
+        <span class="line"></span>
+        <span class="text">PROCÉDURE</span>
+      </div>
+      <h2 class="section-title">Comment payer ?</h2>
+      
+      <div class="steps-list">
+        <div class="step-item">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h4>Contactez le bureau</h4>
+            <p>Rapprochez-vous d'un membre du bureau ou envoyez un message via la page Contact.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h4>Choisissez votre catégorie</h4>
+            <p>Indiquez la catégorie souhaitée parmi les 5 disponibles (1 000 à 10 000 FCFA).</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h4>Effectuez le paiement</h4>
+            <p>Espèces, Wave, Orange Money ou virement bancaire acceptés.</p>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h4>Recevez votre reçu</h4>
+            <p>Un reçu officiel vous est remis et votre statut est mis à jour dans l'espace membre.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Modes de paiement -->
+    <section class="section-block">
+      <div class="eyebrow">
+        <span class="line"></span>
+        <span class="text">MOYENS ACCEPTÉS</span>
+      </div>
+      <h2 class="section-title">Modes de paiement</h2>
+      <div class="payment-grid">
+        <div class="payment-method">
+          <div class="pay-icon">💵</div>
+          <span>Espèces</span>
+        </div>
+        <div class="payment-method">
+          <div class="pay-icon">📱</div>
+          <span>Wave</span>
+        </div>
+        <div class="payment-method">
+          <div class="pay-icon">🍊</div>
+          <span>Orange Money</span>
+        </div>
+        <div class="payment-method">
+          <div class="pay-icon">🏦</div>
+          <span>Virement bancaire</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. FAQ -->
+    <section class="section-block">
+      <div class="eyebrow">
+        <span class="line"></span>
+        <span class="text">FAQ</span>
+      </div>
+      <h2 class="section-title">Questions fréquentes</h2>
+      
+      <div class="faq-list">
+        <div class="faq-item" *ngFor="let faq of faqs; let i = index" [class.open]="faq.open">
+          <button class="faq-question" (click)="toggleFaq(i)">
+            {{ faq.q }}
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer" *ngIf="faq.open">
+            <p>{{ faq.a }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. CTA final -->
+    <section class="cta-block">
+      <h2 class="cta-title">Vous êtes déjà membre ?</h2>
+      <p class="cta-subtitle">
+        Connectez-vous pour consulter l'état de vos cotisations, télécharger vos reçus 
+        et suivre votre historique de paiement.
+      </p>
+      <a routerLink="/login" class="btn btn-cta">
+        → Se connecter à l'espace membre
+      </a>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <p>&copy; 2026 ASC Natangué. Tous droits réservés.</p>
+  </footer>
+</div>
