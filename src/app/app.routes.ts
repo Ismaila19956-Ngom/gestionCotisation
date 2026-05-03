@@ -17,6 +17,18 @@ export const routes: Routes = [
                 .then(m => m.LoginComponent)
     },
     {
+        path: 'cotisations',
+        loadComponent: () =>
+            import('./views/portail/cotisations/cotisations.component')
+                .then(m => m.CotisationsComponent)
+    },
+    {
+        path: 'evenements',
+        loadComponent: () =>
+            import('./views/portail/evenements/evenements.component')
+                .then(m => m.EvenementsComponent)
+    },
+    {
         path: '',
         component: MainLayoutComponent,
         canActivate: [authGuard],

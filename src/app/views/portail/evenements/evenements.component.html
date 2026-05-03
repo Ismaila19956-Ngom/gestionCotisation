@@ -1,0 +1,126 @@
+<div class="events-page">
+  <!-- 1. Header -->
+  <header class="page-header">
+    <div class="header-content container">
+      <a routerLink="/" class="back-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Retour
+      </a>
+      
+      <div class="eyebrow">
+        <span class="line"></span>
+        <span class="text">PORTAIL ASC NATANGUÉ</span>
+      </div>
+      
+      <h1 class="page-title">
+        Événements <br>
+        <em>& Culture</em>
+      </h1>
+      
+      <p class="page-subtitle">Activités sportives, culturelles, sociales et éducatives</p>
+    </div>
+  </header>
+
+  <main class="content-wrapper">
+    <!-- 2. Barre de stats -->
+    <section class="stats-bar container">
+      <div class="stat-item" *ngFor="let stat of stats">
+        <span class="stat-value">{{ stat.value }}</span>
+        <span class="stat-label">{{ stat.label }}</span>
+      </div>
+    </section>
+
+    <!-- 3. Onglets filtres -->
+    <section class="filters-section">
+      <div class="container">
+        <div class="tabs-container">
+          <button 
+            *ngFor="let tab of tabs" 
+            class="tab-btn" 
+            [class.active]="activeTab === tab"
+            (click)="setActiveTab(tab)"
+          >
+            {{ tab }}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Section Prochains événements -->
+    <section class="events-section container">
+      <div class="eyebrow">
+        <span class="line"></span>
+        <span class="text">À VENIR</span>
+      </div>
+      <h2 class="section-title">Prochains événements</h2>
+
+      <div class="events-list">
+        <div class="event-card" *ngFor="let event of evenementsFiltres">
+          <div class="event-date">
+            <span class="day">{{ event.jour }}</span>
+            <span class="month">{{ event.mois }}</span>
+          </div>
+          
+          <div class="event-info">
+            <h3 class="event-titre">{{ event.titre }}</h3>
+            <div class="event-meta">
+              <span class="meta-item">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                {{ event.lieu }}
+              </span>
+              <span class="meta-item">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                {{ event.heure }}
+              </span>
+            </div>
+            <span class="category-badge" [attr.data-cat]="event.categorie">
+              {{ event.categorie }}
+            </span>
+          </div>
+          
+          <div class="event-arrow">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
+        </div>
+        
+        <div class="empty-state" *ngIf="evenementsFiltres.length === 0">
+          <p>Aucun événement prévu dans cette catégorie pour le moment.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Section Galerie -->
+    <section class="gallery-section container">
+      <div class="eyebrow">
+        <span class="line"></span>
+        <span class="text">GALERIE</span>
+      </div>
+      <h2 class="section-title">Moments forts</h2>
+
+      <div class="gallery-strip">
+        <div class="thumb" *ngFor="let photo of photos()">
+          <img [src]="photo.url" [alt]="photo.titre">
+        </div>
+        <div class="thumb more-thumb">
+          <span class="more-text">+14 photos</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. CTA final -->
+    <section class="cta-section">
+      <div class="container">
+        <div class="cta-card">
+          <h2 class="cta-title">Membre de l'ASC ?</h2>
+          <p class="cta-text">
+            Connectez-vous pour vous inscrire aux événements, voir les activités privées 
+            et accéder aux albums photos complets.
+          </p>
+          <a routerLink="/login" class="btn btn-cta">
+            → Se connecter à l'espace membre
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>

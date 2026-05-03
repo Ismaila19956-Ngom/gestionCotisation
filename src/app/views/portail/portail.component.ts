@@ -16,8 +16,8 @@ export class PortailComponent implements OnInit, OnDestroy {
   photos = signal<any[]>([]);
 
   categories = [
-    { name: 'Cotisations & Finances', description: 'Consultez les bilans et cotisations.' },
-    { name: 'Événements & Culture', description: 'Activités culturelles et sorties.' },
+    { name: 'Cotisations & Finances', description: 'Consultez les bilans et cotisations.', link: '/cotisations' },
+    { name: 'Événements & Culture', description: 'Activités culturelles et sorties.', link: '/evenements' },
     { name: 'Sport & Navétanes', description: 'Suivi de l\'équipe et entraînements.' },
     { name: 'Démarches Administratives', description: 'Inscriptions et formulaires.' }
   ];
