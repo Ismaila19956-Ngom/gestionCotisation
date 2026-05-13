@@ -97,7 +97,7 @@ export class MemberService {
         return this.cotisations.asReadonly();
     }
 
-    async addMember(m: Omit<Member, 'id'>) {
+    async addMember(m: Omit<Member, 'id'> & { moisDebut?: string }) {
         try {
             const campagne = await this.supabase.getActiveCampagne();
             if (!campagne) throw new Error('Aucune campagne active trouvée');
@@ -112,7 +112,7 @@ export class MemberService {
 
             if (newMember && newMember.id) {
                 // Initialiser les 12 mois de cotisations pour ce membre
-                await this.supabase.initializeMemberCotisations(newMember.id, campagne.id);
+                await this.supabase.initializeMemberCotisations(newMember.id, campagne.id, Number(m.categorie_id), m.moisDebut || 'Janvier');
             }
 
             await this.refreshFromSupabase();

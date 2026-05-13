@@ -83,6 +83,19 @@
                         <input type="date" formControlName="dateAdhesion" class="form-control"
                             [class.is-invalid]="memberForm.get('dateAdhesion')?.touched && memberForm.get('dateAdhesion')?.invalid">
                     </div>
+
+                    <!-- Mois de début de cotisation -->
+                    <div class="form-group">
+                        <label>Commence à cotiser en... <span>*</span></label>
+                        <select formControlName="moisDebut" class="form-select">
+                            @for (m of months; track m) {
+                                <option [value]="m">{{ m }}</option>
+                            }
+                        </select>
+                        <small class="help-text" style="color: #666; font-size: 0.8rem; margin-top: 4px; display: block;">
+                            Les mois précédant celui-ci seront exonérés (0 F).
+                        </small>
+                    </div>
                 </div>
             </div>
 

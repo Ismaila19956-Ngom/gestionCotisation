@@ -34,8 +34,11 @@ export class MemberFormComponent implements OnInit {
             sexe: ['', [Validators.required]],
             categorie_id: ['10000', [Validators.required]],
             dateAdhesion: [new Date().toISOString().split('T')[0], [Validators.required]],
+            moisDebut: ['Janvier', [Validators.required]]
         });
     }
+
+    months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
     onSubmit() {
         if (this.memberForm.valid) {
