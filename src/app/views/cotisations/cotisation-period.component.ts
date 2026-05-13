@@ -30,9 +30,8 @@ export class CotisationPeriodComponent implements OnInit {
     };
 
     months = [
-        'Octobre', 'Novembre', 'Décembre',
-        'Janvier', 'Février', 'Mars',
-        'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre'
+        'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
     ];
 
     selectedMonth = 'Janvier';

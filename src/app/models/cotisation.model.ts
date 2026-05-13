@@ -22,6 +22,7 @@ export interface Member {
     sexe: Sexe;
     categorie_id: number;
     dateAdhesion: string;
+    moisDebut?: string;
 }
 
 export interface CotisationMois {

@@ -173,22 +173,28 @@ export class SupabaseService {
         return data[0];
     }
 
-    async initializeMemberCotisations(memberId: number, campagneId: number, montant: number = 0) {
+    async initializeMemberCotisations(memberId: number, campagneId: number, montant: number = 0, moisDebut: string = 'Janvier') {
         const months = [
-            'Octobre', 'Novembre', 'Décembre',
             'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-            'Juillet', 'Août', 'Septembre'
+            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
         ];
 
-        const cotisations = months.map(mois => ({
-            membre_id: memberId,
-            campagne_id: campagneId,
-            mois: mois,
-            montant: montant,
-            avance: 0,
-            reste: montant,
-            statut: 'À payer'
-        }));
+        const startIdx = months.indexOf(moisDebut);
+
+        const cotisations = months.map((mois, idx) => {
+            const isExonere = idx < startIdx;
+            const finalMontant = isExonere ? 0 : montant;
+            
+            return {
+                membre_id: memberId,
+                campagne_id: campagneId,
+                mois: mois,
+                montant: finalMontant,
+                avance: 0,
+                reste: finalMontant,
+                statut: isExonere ? 'Payé' : 'À payer'
+            };
+        });
 
         const { error } = await this.supabase.from('cotisations').insert(cotisations);
         if (error) throw error;
@@ -263,7 +269,7 @@ export class SupabaseService {
             // 2. Création de la campagne
             const { data: campData } = await this.supabase.from('campagnes').insert([{ libelle: 'Saison 2025/2026', annee: '2025/2026', statut: 'EN_COURS' }]).select();
             const campagneId = campData![0].id;
-            const months = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre"];
+            const months = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
 
             // 3. Migration Membre par Membre avec MONTANT REEL
             // 3. Migration Membre par Membre avec MONTANT REEL

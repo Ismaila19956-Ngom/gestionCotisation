@@ -124,8 +124,11 @@ export class CotisationCampaignSuiviComponent implements OnInit, OnDestroy {
 
         this.membres.set(membresData.map((m: any) => {
             const memberId = String(m.id);
-            // Utilisation de comparaison de chaînes pour plus de robustesse
             const pList = this.allCotisations().filter(c => String(c.membre_id) === memberId);
+            
+            // Ordre chronologique strict pour l'affichage
+            const monthsOrder = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+
             const paiementsMensuels: CotisationMois[] = pList.map(c => ({
                 id: c.id,
                 membreId: c.membre_id,
@@ -135,7 +138,7 @@ export class CotisationCampaignSuiviComponent implements OnInit, OnDestroy {
                 avance: Number(c.avance) || 0,
                 reste: Number(c.reste) || 0,
                 observation: c.observation
-            }));
+            })).sort((a, b) => monthsOrder.indexOf(a.mois) - monthsOrder.indexOf(b.mois));
 
             const unpaidMonthsCount = paiementsMensuels.filter((p: CotisationMois) =>
                 p.statut === 'En retard' || (p.statut !== 'Payé' && p.statut !== 'Avance' && this.isStrictlyPastMonth(p.mois))
@@ -183,7 +186,7 @@ export class CotisationCampaignSuiviComponent implements OnInit, OnDestroy {
 
     // Vérifie si un mois est STRICTEMENT passé (pour le calcul du retard réel)
     private isStrictlyPastMonth(mois: string): boolean {
-        const monthsRange = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre"];
+        const monthsRange = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
         const now = new Date();
         const currentMonthName = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"][now.getMonth()];
         const targetIdx = monthsRange.indexOf(mois);
@@ -192,7 +195,7 @@ export class CotisationCampaignSuiviComponent implements OnInit, OnDestroy {
     }
 
     private isPastOrCurrentMonth(mois: string): boolean {
-        const monthsRange = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre"];
+        const monthsRange = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
         const now = new Date();
         const currentMonthName = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"][now.getMonth()];
         const targetIdx = monthsRange.indexOf(mois);
@@ -202,7 +205,7 @@ export class CotisationCampaignSuiviComponent implements OnInit, OnDestroy {
 
 
     async quickPay(membre: MembreCotisation) {
-        const monthsRange = ["Octobre", "Novembre", "Décembre", "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre"];
+        const monthsRange = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
         const now = new Date();
         const currentMonthName = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"][now.getMonth()];
 
