@@ -42,8 +42,88 @@ export class DashboardComponent implements OnInit {
 
     activeTab = signal('all');
 
+    months = [
+        { id: 'Janvier', label: 'Jan' },
+        { id: 'Février', label: 'Fév' },
+        { id: 'Mars', label: 'Mar' },
+        { id: 'Avril', label: 'Avr' },
+        { id: 'Mai', label: 'Mai' },
+        { id: 'Juin', label: 'Juin' },
+        { id: 'Juillet', label: 'Juil' },
+        { id: 'Août', label: 'Août' },
+        { id: 'Septembre', label: 'Sept' },
+        { id: 'Octobre', label: 'Oct' },
+        { id: 'Novembre', label: 'Nov' },
+        { id: 'Décembre', label: 'Déc' }
+    ];
+    selectedMonth = signal('Mai');
+
     cotisations = this.memberService.getAllCotisations();
     members     = this.memberService.getMembers();
+
+    // ── Monthly Evolution stats ────────────────────────
+    monthlyEvolutionStats = computed(() => {
+        const allCotis = this.cotisations();
+        const allM = this.members();
+
+        return this.months.map(mInfo => {
+            const monthCotis = allCotis.filter(c => c.mois === mInfo.id);
+            let totalAttendu = 0;
+            let totalRecu = 0;
+
+            monthCotis.forEach(c => {
+                const m = this.memberService.getMemberById(c.membreId);
+                const catVal = m ? Number(m.categorie_id) || 0 : 0;
+                totalAttendu += catVal;
+                totalRecu += c.montantVerse;
+            });
+
+            const recP = totalAttendu > 0 ? (totalRecu / totalAttendu) * 100 : 0;
+            const recouvrementRate = Math.min(Math.round(recP), 100);
+            const arrieresRate = totalAttendu > 0 ? 100 - recouvrementRate : 0;
+
+            return {
+                id: mInfo.id,
+                label: mInfo.label,
+                recouvrementRate,
+                arrieresRate,
+                totalRecu,
+                totalAttendu
+            };
+        });
+    });
+
+    activeEvolutionStats = computed(() => {
+        return this.monthlyEvolutionStats().filter(s => s.totalAttendu > 0);
+    });
+
+    getCategoryStatsForMonth(montantStr: string | null, monthName: string) {
+        if (!montantStr) return { memberCount: 0, attendu: 0, recu: 0, arrieres: 0, globalPct: 0 };
+        const montant = Number(montantStr);
+        const catMembers = this.members().filter(m => Number(m.categorie_id) === montant);
+        const memberIds = new Set(catMembers.map(m => String(m.id)));
+        const catCotis = this.cotisations().filter(c => memberIds.has(String(c.membreId)));
+
+        // Stats for selected month
+        const monthCotis = catCotis.filter(c => c.mois === monthName);
+        const recu = monthCotis.reduce((s, c) => s + c.montantVerse, 0);
+        const attendu = catMembers.length * montant;
+        const arrieres = Math.max(0, attendu - recu);
+
+        // Cumulative stats (YTD global)
+        const globalRecu = catCotis.reduce((s, c) => s + c.montantVerse, 0);
+        const activeMonths = Array.from(new Set(this.cotisations().map(c => c.mois)));
+        const globalAttendu = catMembers.length * montant * (activeMonths.length || 1);
+        const globalPct = globalAttendu > 0 ? Math.round((globalRecu / globalAttendu) * 100) : 0;
+
+        return {
+            memberCount: catMembers.length,
+            attendu,
+            recu,
+            arrieres,
+            globalPct: Math.min(globalPct, 100)
+        };
+    }
 
     // ── Global stats computed from active tab ─────────
     filteredStats = computed(() => {
