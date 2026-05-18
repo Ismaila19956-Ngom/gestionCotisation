@@ -556,4 +556,193 @@ export class CotisationCampaignSuiviComponent implements OnInit, OnDestroy {
             }
         });
     }
+
+    exporterSuiviMensuel() {
+        this.isExportOpen.set(false);
+        this.generateSuiviMensuel();
+    }
+
+    private generateSuiviMensuel() {
+        const MOIS = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+        const now = new Date();
+        const currentYear = now.getFullYear();
+
+        const cats = [
+            { montant: 10000, label: '10 000 F CFA' },
+            { montant:  5000, label:  '5 000 F CFA' },
+            { montant:  3000, label:  '3 000 F CFA' },
+            { montant:  2000, label:  '2 000 F CFA' },
+            { montant:  1000, label:  '1 000 F CFA' },
+        ];
+
+        let sectionsHtml = '';
+        let grandTotal   = 0;
+
+        for (const cat of cats) {
+            const catMembers = this.allMembres()
+                .filter(m => Number(m.categorie_id) === cat.montant)
+                .sort((a: any, b: any) => a.nom.localeCompare(b.nom));
+
+            if (catMembers.length === 0) continue;
+
+            const memberIds = new Set(catMembers.map(m => m.id));
+            const catCotis  = this.allCotisations().filter(c => memberIds.has(c.membre_id));
+
+            // En-tête de mois
+            const thMois = MOIS.map(m => `<th class="sm-th">${m.substring(0,3)}</th>`).join('');
+
+            let catTotal = 0;
+            let rows = '';
+
+            for (const m of catMembers) {
+                const memCotis = catCotis.filter(c => String(c.membre_id) === String(m.id));
+                const totalVerse = memCotis.reduce((s, c) => s + (Number(c.avance) || 0), 0);
+                catTotal += totalVerse;
+
+                // Cellules V / X pour chaque mois
+                const cellsMois = MOIS.map(mois => {
+                    const cot = memCotis.find(c => c.mois === mois);
+                    const paye = cot && (Number(cot.avance) >= cat.montant || cot.statut === 'Payé' || cot.statut === 'Avance');
+                    return `<td class="sm-cell ${paye ? 'sm-v' : 'sm-x'}">${paye ? '✔' : '✘'}</td>`;
+                }).join('');
+
+                rows += `<tr>
+                    <td class="sm-name">${m.prenom} ${m.nom.toUpperCase()}</td>
+                    <td class="sm-montant">${cat.label}</td>
+                    ${cellsMois}
+                </tr>`;
+            }
+
+            grandTotal += catTotal;
+
+            const sousTotal = this.formatMontant(catTotal);
+
+            sectionsHtml += `
+            <div class="sm-section">
+                <div class="sm-cat-header">
+                    <span>CATÉGORIE : ${cat.label}</span>
+                    <span>${catMembers.length} membre(s)</span>
+                </div>
+                <div style="overflow-x:auto;">
+                <table class="sm-table">
+                    <thead><tr>
+                        <th class="sm-th-name">Prénoms &amp; Noms</th>
+                        <th class="sm-th-montant">Montant</th>
+                        ${thMois}
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                    <tfoot><tr class="sm-total-row">
+                        <td colspan="2"><strong>SOUS-TOTAL ENCAISSÉ :</strong></td>
+                        <td colspan="12" style="text-align:left; padding-left:8px;"><strong>${sousTotal}</strong></td>
+                    </tr></tfoot>
+                </table>
+                </div>
+            </div>`;
+        }
+
+        const grandTotalWords = this.numberToWordsFr(grandTotal);
+
+        const pdfHtml = `
+<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:10px;color:#1a1a1a;background:#fff;padding:24px;">
+  <div style="text-align:center;border-bottom:2px solid #004d1a;padding-bottom:10px;margin-bottom:16px;">
+    <div style="font-size:16px;font-weight:800;color:#004d1a;text-transform:uppercase;">SUIVI MENSUEL DES COTISATIONS</div>
+    <div style="font-size:11px;color:#444;margin-top:3px;">ASC NATANGUÉ — Saison ${currentYear - 1}/${currentYear}</div>
+  </div>
+  <style>
+    .sm-section { margin-bottom:20px; }
+    .sm-cat-header { background:#004d1a; color:#fff; padding:5px 10px; font-size:11px; font-weight:700;
+                     display:flex; justify-content:space-between; border-radius:4px 4px 0 0; }
+    .sm-table { width:100%; border-collapse:collapse; font-size:9px; }
+    .sm-table th { background:#e8f5e9; color:#004d1a; padding:4px 3px; text-align:center;
+                   border:1px solid #c8e6c9; font-weight:700; }
+    .sm-th-name { text-align:left !important; min-width:120px; }
+    .sm-th-montant { min-width:80px; }
+    .sm-th { min-width:28px; }
+    .sm-table td { padding:3px; border:1px solid #eee; text-align:center; }
+    .sm-name { text-align:left; white-space:nowrap; }
+    .sm-montant { white-space:nowrap; color:#555; }
+    .sm-v { color:#15803d; font-weight:800; background:#f0fdf4; }
+    .sm-x { color:#dc2626; font-weight:800; background:#fff7f7; }
+    .sm-cell { font-size:10px; }
+    .sm-total-row td { background:#f0fdf4 !important; font-size:10px;
+                       border-top:2px solid #004d1a; padding:5px 6px; }
+  </style>
+  ${sectionsHtml}
+  <div style="margin-top:16px;border:1px solid #004d1a;padding:12px;background:#f0f7f2;border-radius:4px;">
+    <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;">
+      <span>TOTAL GÉNÉRAL ENCAISSÉ</span><span>${this.formatMontant(grandTotal)}</span>
+    </div>
+    <div style="font-size:10px;font-style:italic;color:#004d1a;border-top:1px solid #ccc;padding-top:4px;">
+      En lettres : ${grandTotalWords} francs CFA
+    </div>
+  </div>
+</div>`;
+
+        Swal.fire({
+            title: 'Suivi Mensuel par Catégorie',
+            html: `<div style="max-height:520px;overflow-y:auto;border:1px solid #eee;background:#f9f9f9;">${pdfHtml}</div>`,
+            width: '1100px',
+            showCancelButton: true,
+            confirmButtonText: '📥 Télécharger en PDF',
+            cancelButtonText: 'Fermer',
+            confirmButtonColor: '#004d1a',
+        }).then((result: any) => {
+            if (result.isConfirmed) {
+                const opt = {
+                    margin: 8,
+                    filename: `Suivi_Mensuel_Natangue_Campagne_${this.campagneId}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                };
+                const element = document.createElement('div');
+                element.innerHTML = pdfHtml;
+                (window as any).html2pdf().from(element).set(opt).save();
+            }
+        });
+    }
+
+    private numberToWordsFr(n: number): string {
+        if (n === 0) return 'zéro';
+        const u = ['','un','deux','trois','quatre','cinq','six','sept','huit','neuf',
+                   'dix','onze','douze','treize','quatorze','quinze','seize','dix-sept','dix-huit','dix-neuf'];
+        const d = ['','','vingt','trente','quarante','cinquante','soixante','soixante','quatre-vingt','quatre-vingt'];
+
+        const belowHundred = (x: number): string => {
+            if (x < 20)  return u[x];
+            const di = Math.floor(x / 10);
+            const ui = x % 10;
+            if (di === 7) return ui === 1 ? 'soixante et onze' : `soixante-${u[10 + ui]}`;
+            if (di === 9) return `quatre-vingt-${u[10 + ui]}`;
+            if (ui === 0) return d[di] + (di === 8 ? 's' : '');
+            if (ui === 1 && di !== 8) return `${d[di]} et un`;
+            return `${d[di]}-${u[ui]}`;
+        };
+
+        const belowThousand = (x: number): string => {
+            if (x < 100) return belowHundred(x);
+            const h = Math.floor(x / 100);
+            const r = x % 100;
+            const prefix = h === 1 ? 'cent' : `${u[h]} cent${r === 0 && h > 1 ? 's' : ''}`;
+            return r === 0 ? prefix : `${prefix} ${belowHundred(r)}`;
+        };
+
+        if (n < 1000) return belowThousand(n);
+
+        const millions = Math.floor(n / 1_000_000);
+        const thousands = Math.floor((n % 1_000_000) / 1000);
+        const remainder = n % 1000;
+
+        let result = '';
+        if (millions > 0) {
+            result += (millions === 1 ? 'un million' : `${belowThousand(millions)} millions`) + ' ';
+        }
+        if (thousands > 0) {
+            result += (thousands === 1 ? 'mille' : `${belowThousand(thousands)} mille`) + ' ';
+        }
+        if (remainder > 0) {
+            result += belowThousand(remainder);
+        }
+        return result.trim();
+    }
 }

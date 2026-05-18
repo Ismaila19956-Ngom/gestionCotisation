@@ -55,7 +55,23 @@ export class SupabaseService {
         try {
             const { data, error } = await this.supabase.from('config_categories').select('*').order('montant', { ascending: true });
             if (error) throw error;
-            return data || [];
+            if (!data || data.length === 0) {
+                const local = localStorage.getItem('asc_categories');
+                if (local) {
+                    const parsed = JSON.parse(local);
+                    if (parsed && parsed.length > 0) return parsed;
+                }
+                const defaults = [
+                    { id: 1, montant: 1000, actif: true },
+                    { id: 2, montant: 2000, actif: true },
+                    { id: 3, montant: 3000, actif: true },
+                    { id: 4, montant: 5000, actif: true },
+                    { id: 10, montant: 10000, actif: true }
+                ];
+                localStorage.setItem('asc_categories', JSON.stringify(defaults));
+                return defaults;
+            }
+            return data;
         } catch (e) {
             console.warn('Using local fallback for categories');
             const local = localStorage.getItem('asc_categories');

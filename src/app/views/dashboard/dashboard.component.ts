@@ -62,12 +62,14 @@ export class DashboardComponent implements OnInit {
 
         let totalRecu = 0, totalAttendu = 0, arrieres = 0, avances = 0;
 
-        targetMembers.forEach(m => { totalAttendu += Number(m.categorie_id) || 0; });
-
+        // Corrected calculation: Total Attendu is the sum of expected amounts for ALL cotisation records found
         targetCotis.forEach(c => {
-            totalRecu += c.montantVerse;
-            const m      = this.memberService.getMemberById(c.membreId);
+            const m = this.memberService.getMemberById(c.membreId);
             const catVal = m ? Number(m.categorie_id) || 0 : 0;
+            
+            totalAttendu += catVal;
+            totalRecu += c.montantVerse;
+
             if (c.status === 'Rappel') arrieres += Math.max(0, catVal - c.montantVerse);
             if (c.status === 'Avance') avances  += Math.max(0, c.montantVerse - catVal);
         });
@@ -113,8 +115,12 @@ export class DashboardComponent implements OnInit {
         const memberIds  = new Set(catMembers.map(m => String(m.id)));
         const catCotis   = this.cotisations().filter(c => memberIds.has(String(c.membreId)));
 
-        const attendu  = catMembers.length * montant;
         const recu     = catCotis.reduce((s, c) => s + c.montantVerse, 0);
+        const attendu  = catCotis.reduce((s, c) => {
+            const m = this.memberService.getMemberById(c.membreId);
+            return s + (m ? Number(m.categorie_id) || 0 : 0);
+        }, 0);
+        
         const arrieres = catCotis
             .filter(c => c.status === 'Rappel')
             .reduce((s, c) => {
@@ -171,6 +177,153 @@ export class DashboardComponent implements OnInit {
             text: 'La génération du tableau détaillé est en cours de développement...',
             icon: 'info',
             confirmButtonColor: '#004d1a'
+        });
+    }
+
+    exporterSuiviMensuel() {
+        this.isExportOpen.set(false);
+        this.generateSuiviMensuel();
+    }
+
+    //  GÉNÉRATION SUIVI MENSUEL PAR CATÉGORIE (PDF)
+    private generateSuiviMensuel() {
+        const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin',
+                      'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+        const now = new Date();
+        const currentYear = now.getFullYear();
+
+        const cats = [
+            { montant: 10000, label: '10 000 F CFA' },
+            { montant:  5000, label:  '5 000 F CFA' },
+            { montant:  3000, label:  '3 000 F CFA' },
+            { montant:  2000, label:  '2 000 F CFA' },
+            { montant:  1000, label:  '1 000 F CFA' },
+        ];
+
+        let sectionsHtml = '';
+        let grandTotal   = 0;
+
+        for (const cat of cats) {
+            const catMembers = this.members()
+                .filter(m => Number(m.categorie_id) === cat.montant)
+                .sort((a, b) => a.nom.localeCompare(b.nom));
+
+            if (catMembers.length === 0) continue;
+
+            const memberIds = new Set(catMembers.map(m => m.id));
+            const catCotis  = this.cotisations().filter(c => memberIds.has(c.membreId));
+
+            // En-tête de mois
+            const thMois = MOIS.map(m => `<th class="sm-th">${m.substring(0,3)}</th>`).join('');
+
+            let catTotal = 0;
+            let rows = '';
+
+            for (const m of catMembers) {
+                const memCotis = catCotis.filter(c => c.membreId === m.id);
+                const totalVerse = memCotis.reduce((s, c) => s + c.montantVerse, 0);
+                catTotal += totalVerse;
+
+                // Cellules V / X pour chaque mois
+                const cellsMois = MOIS.map(mois => {
+                    const cot = memCotis.find(c => c.mois === mois);
+                    const paye = cot && cot.montantVerse >= cat.montant;
+                    return `<td class="sm-cell ${paye ? 'sm-v' : 'sm-x'}">${paye ? '✔' : '✘'}</td>`;
+                }).join('');
+
+                rows += `<tr>
+                    <td class="sm-name">${m.prenom} ${m.nom}</td>
+                    <td class="sm-montant">${cat.label}</td>
+                    ${cellsMois}
+                </tr>`;
+            }
+
+            grandTotal += catTotal;
+
+            const sousTotal = this.fmtPdf(catTotal);
+
+            sectionsHtml += `
+            <div class="sm-section">
+                <div class="sm-cat-header">
+                    <span>CATÉGORIE : ${cat.label}</span>
+                    <span>${catMembers.length} membre(s)</span>
+                </div>
+                <div style="overflow-x:auto;">
+                <table class="sm-table">
+                    <thead><tr>
+                        <th class="sm-th-name">Prénoms &amp; Noms</th>
+                        <th class="sm-th-montant">Montant</th>
+                        ${thMois}
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                    <tfoot><tr class="sm-total-row">
+                        <td colspan="2"><strong>SOUS-TOTAL ENCAISSÉ :</strong></td>
+                        <td colspan="12" style="text-align:left; padding-left:8px;"><strong>${sousTotal}</strong></td>
+                    </tr></tfoot>
+                </table>
+                </div>
+            </div>`;
+        }
+
+        const grandTotalWords = this.numberToWordsFr(grandTotal);
+
+        const pdfHtml = `
+<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:10px;color:#1a1a1a;background:#fff;padding:24px;">
+  <div style="text-align:center;border-bottom:2px solid #004d1a;padding-bottom:10px;margin-bottom:16px;">
+    <div style="font-size:16px;font-weight:800;color:#004d1a;text-transform:uppercase;">SUIVI MENSUEL DES COTISATIONS</div>
+    <div style="font-size:11px;color:#444;margin-top:3px;">ASC NATANGUÉ — Saison ${currentYear - 1}/${currentYear}</div>
+  </div>
+  <style>
+    .sm-section { margin-bottom:20px; }
+    .sm-cat-header { background:#004d1a; color:#fff; padding:5px 10px; font-size:11px; font-weight:700;
+                     display:flex; justify-content:space-between; border-radius:4px 4px 0 0; }
+    .sm-table { width:100%; border-collapse:collapse; font-size:9px; }
+    .sm-table th { background:#e8f5e9; color:#004d1a; padding:4px 3px; text-align:center;
+                   border:1px solid #c8e6c9; font-weight:700; }
+    .sm-th-name { text-align:left !important; min-width:120px; }
+    .sm-th-montant { min-width:80px; }
+    .sm-th { min-width:28px; }
+    .sm-table td { padding:3px; border:1px solid #eee; text-align:center; }
+    .sm-name { text-align:left; white-space:nowrap; }
+    .sm-montant { white-space:nowrap; color:#555; }
+    .sm-v { color:#15803d; font-weight:800; background:#f0fdf4; }
+    .sm-x { color:#dc2626; font-weight:800; background:#fff7f7; }
+    .sm-cell { font-size:10px; }
+    .sm-total-row td { background:#f0fdf4 !important; font-size:10px;
+                       border-top:2px solid #004d1a; padding:5px 6px; }
+  </style>
+  ${sectionsHtml}
+  <div style="margin-top:16px;border:1px solid #004d1a;padding:12px;background:#f0f7f2;border-radius:4px;">
+    <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;">
+      <span>TOTAL GÉNÉRAL ENCAISSÉ</span><span>${this.fmtPdf(grandTotal)} FCFA</span>
+    </div>
+    <div style="font-size:10px;font-style:italic;color:#004d1a;border-top:1px solid #ccc;padding-top:4px;">
+      En lettres : ${grandTotalWords} francs CFA
+    </div>
+  </div>
+</div>`;
+
+        Swal.fire({
+            title: 'Suivi Mensuel par Catégorie',
+            html: `<div style="max-height:520px;overflow-y:auto;border:1px solid #eee;background:#f9f9f9;">${pdfHtml}</div>`,
+            width: '1100px',
+            showCancelButton: true,
+            confirmButtonText: '📥 Télécharger en PDF',
+            cancelButtonText: 'Fermer',
+            confirmButtonColor: '#004d1a',
+        }).then((result: any) => {
+            if (result.isConfirmed) {
+                const opt = {
+                    margin: 8,
+                    filename: `Suivi_Mensuel_Natangue_${currentYear}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                };
+                const element = document.createElement('div');
+                element.innerHTML = pdfHtml;
+                (window as any).html2pdf().from(element).set(opt).save();
+            }
         });
     }
 
